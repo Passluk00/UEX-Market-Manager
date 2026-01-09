@@ -1,0 +1,7 @@
+psutil
+aiohttp
+asyncpg
+requests
+discord.py
+cryptography
+python-dotenv

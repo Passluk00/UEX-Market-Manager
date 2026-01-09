@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Docker & Sistem
+.env
+*.log
+docker-compose.override.yml
+
+# Certificates
+certbot/conf/
+certbot/www/
+nginx/certs/
+*.pem
+*.crt
+*.key
+
+# Database
+*.db
+*.sqlite
+postgres-data/
+
+# OS
+.DS_Store
+Thumbs.db

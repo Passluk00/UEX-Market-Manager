@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UEX Bot Server</title>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #0a0f24, #000);
+      color: #fff;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #6cf;
+    }
+    p {
+      opacity: 0.8;
+      font-size: 1.1rem;
+    }
+    .status {
+      margin-top: 2rem;
+      background: #111;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .online {
+      color: #0f0;
+    }
+    .offline {
+      color: #f33;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 UEX Market Manager Status Page</h1>
+  <p>The server is up and ready to receive webhooks.</p>
+  <div class="status" id="status">Status: <span id="statusText">Checking in progress...</span></div>
+
+  <script>
+    const statusText = document.getElementById("statusText");
+
+    async function checkBotStatus() {
+      try {
+        // URL dell'API del bot (modifica la porta se diversa)
+        const response = await fetch("/health");
+        if (response.ok) {
+          statusText.textContent = "ONLINE ✅";
+          statusText.className = "online";
+        } else {
+          statusText.textContent = "OFFLINE ❌";
+          statusText.className = "offline";
+        }
+      } catch (error) {
+        statusText.textContent = "OFFLINE ❌";
+        statusText.className = "offline";
+      }
+    }
+
+    // Controlla subito all’avvio
+    checkBotStatus();
+
+    // Poi ogni 3 minuti (180000 ms)
+    setInterval(checkBotStatus, 180000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+services:
+
+# Python Bot
+  python:
+    build: ./bot
+    container_name: python
+    restart: always
+    volumes:
+      - ./bot:/app
+    expose:
+      - "20187" # change this if you change the server port
+    networks:
+      - backend
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
+# Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    depends_on:
+      - python
+    networks:
+      - backend
+
+# Certbot for SSL Certificates
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # Command changed to not attempt infinite renewal if it fails
+    command: >
+      certonly --webroot
+      --webroot-path=/var/www/certbot
+      --email test@gmail.com            # Change with your email for the cert
+      --agree-tos
+      --no-eff-email
+      -d YOUR DOMAIN                    # Cahange with Your domain                
+      
+
+# Watchdog Service
+  watchdog:
+    build: ./watchdog
+    container_name: watchdog
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - python
+
+# PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: always
+    env_file: 
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge
