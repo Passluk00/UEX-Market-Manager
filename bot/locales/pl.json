@@ -1,7 +1,7 @@
 {
   "add_description": "Stwórz swój **prywatny czat**, aby otrzymywać powiadomienia i aktualizacje dotyczące Twoich **negocjacji UEX** bezpośrednio na Discordzie!\n\n👉 Naciśnij przycisk poniżej, aby zacząć.\n\n🌐 **[Status bota](https://passluk.ddns.net)**",
   "add_error": "❌ Błąd podczas dodawania przycisku.",
-  "add_footer": "Stworzone z ❤️ przez Passluk | UEX Bot",
+  "add_footer": "Stworzone z ❤️ przez Passluk | Powered by UEX Corp",
   "add_success": "✅ Przycisk został pomyślnie dodany w {channel}",
   "add_title": "💬 Połącz się z Marketplace UEX",
   "already_active": "⚠️ Masz już aktywny czat!",

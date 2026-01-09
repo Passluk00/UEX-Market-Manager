@@ -1,7 +1,7 @@
 {
   "add_description": "Erstelle deinen **privaten Chat**, um Benachrichtigungen und Updates zu deinen **UEX-Verhandlungen** direkt auf Discord zu erhalten!\n\n👉 Klicke auf die Schaltfläche unten, um zu beginnen.\n\n🌐 **[Bot-Status](https://passluk.ddns.net)**",
   "add_error": "❌ Fehler beim Hinzufügen der Schaltfläche.",
-  "add_footer": "Erstellt mit ❤️ von Passluk | UEX Bot",
+  "add_footer": "Erstellt mit ❤️ von Passluk | Powered by UEX Corp",
   "add_success": "✅ Schaltfläche erfolgreich in {channel} hinzugefügt",
   "add_title": "💬 Verbinde dich mit dem UEX Marketplace",
   "already_active": "⚠️ Du hast bereits einen aktiven Chat!",

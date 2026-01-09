@@ -82,14 +82,36 @@ Args:
 Returns:
     None
 """
-@bot.tree.command(name="add", description="Add the private chat button to a channel")
-@app_commands.describe(canale="Channel where the button message will be sent")
+from discord import app_commands
+
+@bot.tree.command(
+    name="add",
+    description="Add the private chat button to a channel"
+)
+@app_commands.describe(
+    channel="Channel where the button message will be sent",
+    language="Language of the button message"
+)
+@app_commands.choices(
+    language=[
+        app_commands.Choice(name="🇮🇹 Italiano", value="it"),
+        app_commands.Choice(name="🇬🇧 English", value="en"),
+        app_commands.Choice(name="🇩🇪 Deutsch", value="de"),
+        app_commands.Choice(name="🇫🇷 Français", value="fr"),
+        app_commands.Choice(name="🇵🇱 Polski", value="pl"),
+        app_commands.Choice(name="🇵🇹 Português", value="pt"),
+        app_commands.Choice(name="🇷🇺 Русский", value="ru"),
+        app_commands.Choice(name="🇨🇳 中文", value="zh"),
+    ]
+)
 @app_commands.checks.has_permissions(manage_guild=True)
-async def add_button(interaction: discord.Interaction, canale: discord.TextChannel):
-    """Slash command to add the button to a specific channel."""
-    
-    lang = SYSTEM_LANGUAGE
-    
+async def add_button(
+    interaction: discord.Interaction,
+    channel: discord.TextChannel,
+    language: app_commands.Choice[str]  # OBBLIGATORIO
+):
+    lang = language.value
+
     try:
         view = OpenThreadButton(lang=lang)
 
@@ -99,28 +121,29 @@ async def add_button(interaction: discord.Interaction, canale: discord.TextChann
             color=discord.Color.blurple()
         )
 
-        embed.set_footer(
-            text=t(lang, "add_footer")
-        )
-
+        embed.set_footer(text=t(lang, "add_footer"))
         embed.set_thumbnail(url="https://uexcorp.space/favicon.ico")
 
-        await canale.send(embed=embed, view=view)
+        await channel.send(embed=embed, view=view)
+
         await interaction.response.send_message(
-            t(lang, "add_success", channel=canale.mention),
+            t(lang, "add_success", channel=channel.mention),
             ephemeral=True
         )
 
         logging.info(
-            f"🔘 Button added by {interaction.user} in {canale.name}"
+            f"🔘 Button added by {interaction.user} in {channel.name} (lang={lang})"
         )
 
-    except Exception as e:
+    except Exception:
         logging.exception("💥 Error adding button with /add")
         await interaction.response.send_message(
             t(lang, "add_error"),
             ephemeral=True
         )
+
+
+
         
         
         
