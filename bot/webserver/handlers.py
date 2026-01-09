@@ -28,15 +28,6 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
         data = json.loads(body) if body else {}
         
         lang = await get_user_language(user_id)
-
-        logging.info(
-            t(lang, 
-                "webhook.received",
-                event=event_type,
-                user_id=user_id,
-                data=data
-            )
-        )
         
         if event_type == "negotiation_started":
             
@@ -104,7 +95,7 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
                 else:
                     logging.warning(f"⚠️ error sending welcome message for user_id={user_id}: {error}")
             else:
-                logging.error("non ha il consenso per inviare il mex o gli manca il messaggio")
+                logging.error("he does not have the consent to send the message or the message is missing")
             
             
 # ------- Case 2: Reply message -------

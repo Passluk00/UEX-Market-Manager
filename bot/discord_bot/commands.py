@@ -6,6 +6,7 @@ import db.sessions as sessions
 from discord_bot.bot import bot
 from discord import app_commands
 from discord_bot.views import OpenThreadButton
+from config import SYSTEM_LANGUAGE
 
 
 
@@ -87,7 +88,7 @@ Returns:
 async def add_button(interaction: discord.Interaction, canale: discord.TextChannel):
     """Slash command to add the button to a specific channel."""
     
-    lang = await sessions.resolve_and_store_language(interaction)
+    lang = SYSTEM_LANGUAGE
     
     try:
         view = OpenThreadButton(lang=lang)
