@@ -97,7 +97,7 @@ While the original version focused on basic notification delivery, this **new it
     Clone the project repository and move into the project directory:
 
     ```
-    git clone https://github.com/Passluk00/UEX-Market.git
+    git clone https://github.com/Passluk00/UEX-Market-Manager.git
     cd UEX-Market
     ```
 
