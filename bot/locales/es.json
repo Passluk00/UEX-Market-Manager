@@ -37,6 +37,7 @@
   "guide_webhook_title": "Paso 2: Configurar los Webhooks",
   "guide_welcome_desc": "¡Hola {username}! Esta guía te ayudará a configurar el bot en pocos pasos.\n\n⚠️ **Nota importante:** No compartas tus llaves con nadie. El bot las usará exclusivamente para gestionar tus notificaciones personales en UEX.\n\nPulsa **Siguiente ➡️** para comenzar.",
   "guide_welcome_title": "Bienvenido a UEX Market Bot",
+  "guide_save_note": "Haz clic en el botón verde «Guardar» en la parte inferior central de la pantalla para confirmar.",
   "hash_not_found": "❌ No se pudo encontrar el hash de la notificación en este mensaje.",
   "negotiation": "📦 Negociación",
   "open_uex": "🔗 [Abrir en UEX](https://uexcorp.space/marketplace/negotiate/hash/{hash})",

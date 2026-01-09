@@ -1,7 +1,7 @@
 {
   "add_description": "Create your **private chat** to receive notifications and updates on your **UEX negotiations** directly on Discord!\n\n👉 Press the button below to start.\n\n🌐 **[Bot Status](https://passluk.ddns.net)**",
   "add_error": "❌ Error adding the button.",
-  "add_footer": "Created with ❤️ by Passluk | Powered by UEX Corp",
+  "add_footer": "Created with ❤️ by Passluk | UEX Bot",
   "add_success": "✅ Button successfully added in {channel}",
   "add_title": "💬 Connect to UEX Marketplace",
   "already_active": "⚠️ You already have an active chat!",
@@ -37,6 +37,7 @@
   "guide_webhook_title": "Step 2: Configure Webhooks",
   "guide_welcome_desc": "Hi {username}! This guide will help you configure the bot in a few steps.\n\n⚠️ **Important Note:** Do not share your keys with anyone. The bot will use them exclusively to manage your personal UEX notifications.\n\nPress **Next ➡️** to start.",
   "guide_welcome_title": "Welcome to UEX Market Bot",
+  "guide_save_note": "Click the green “Save” button at the bottom center of the screen to confirm.",
   "hash_not_found": "❌ Could not find the notification hash in this message.",
   "negotiation": "📦 Negotiation",
   "open_uex": "🔗 [Open on UEX](https://uexcorp.space/marketplace/negotiate/hash/{hash})",

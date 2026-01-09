@@ -37,6 +37,7 @@
   "guide_webhook_title": "第 2 步：配置 Webhook",
   "guide_welcome_desc": "您好 {username}！本指南将帮助您通过几个步骤配置机器人。\n\n⚠️ **重要提示：** 请勿与任何人共享您的密钥。机器人将仅用于管理您的个人 UEX 通知。\n\n点击 **下一步 ➡️** 开始。",
   "guide_welcome_title": "欢迎使用 UEX 市场机器人",
+  "guide_save_note": "点击屏幕底部中央的绿色“保存”按钮以确认。",
   "hash_not_found": "❌ 在此消息中找不到通知哈希。",
   "negotiation": "📦 交易",
   "open_uex": "🔗 [在 UEX 上打开](https://uexcorp.space/marketplace/negotiate/hash/{hash})",
