@@ -5,8 +5,8 @@ from utils.i18n import t
 import db.sessions as sessions
 from discord_bot.bot import bot
 from discord import app_commands
-from discord_bot.views import OpenThreadButton
 from config import SYSTEM_LANGUAGE
+from discord_bot.views import OpenThreadButton
 
 
 
@@ -24,7 +24,7 @@ Returns:
 @app_commands.checks.has_permissions(manage_guild=True)
 async def stats(interaction: discord.Interaction):
     
-    lang = await sessions.resolve_and_store_language(interaction)
+    lang = SYSTEM_LANGUAGE
     
     
     if pool.db_pool is None:
@@ -143,7 +143,6 @@ async def add_button(
         )
 
 
-
         
         
         
@@ -217,6 +216,55 @@ async def enable_welcome_mex(interaction: discord.Interaction, enable: bool):
 
 
 
+
+@bot.tree.command(name="delete_chat", description="Delete one specific chat")
+@app_commands.describe(user="Delete a selected chat by username")
+@app_commands.checks.has_permissions(manage_guild=True)
+async def delete_selected_chat(
+    interaction: discord.Interaction,
+    user: discord.Member
+):
+    lang = await sessions.resolve_and_store_language(interaction)
+
+    try:
+        
+        thread_id = await sessions.get_user_thread_id(user_id=user.id)
+        
+        
+        if not thread_id:
+            await interaction.response.send_message(
+                t(lang, "chat_not_found", username=user.name),
+                ephemeral=True
+            )
+        
+        thread = await interaction.client.fetch_channel(int(thread_id))
+            
+        await thread.send(
+            t(lang, "chat_closed_readonly")
+        )
+        
+        await thread.edit(
+            locked=True
+        )
+        
+        
+        await sessions.remove_user_session(user_id=user.id)
+
+        await interaction.response.send_message(
+            t(lang, "deleted_user", username=user.name),
+            ephemeral=True
+        )
+
+        logging.info(
+            f"Chat utente {user.name} cancellata da admin {interaction.user.name}"
+        )
+
+    except Exception as e:
+        logging.warning(f"Utente non trovato o errore: {e}")
+        await interaction.response.send_message(
+            t(lang, "generic_error_command_delete"),
+            ephemeral=True
+        )   
 
 
 

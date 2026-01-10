@@ -70,7 +70,7 @@ async def on_ready():
     except Exception as e:
         logging.error(f"❌ Error synchronizing commands: {e}")
         
-    bot.add_view(OpenThreadButton(lang=SYSTEM_LANGUAGE))
+    bot.add_view(OpenThreadButton(lang=SYSTEM_LANGUAGE, aiohttp_session= aiohttp_session))
 
 
 
