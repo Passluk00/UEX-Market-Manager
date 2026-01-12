@@ -1,4 +1,3 @@
-# services/http.py
 import aiohttp
 
 _http_session: aiohttp.ClientSession | None = None

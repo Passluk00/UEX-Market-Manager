@@ -5,25 +5,28 @@ from db import  save_user_session
 from directory import API_GET_USER,API_POST_MESSAGE
 
 
-"""
-Fetches the official UEX username via API and updates the user's session in the database.
 
-This function validates the provided credentials (bearer token and secret key) 
-against the UEX API. If successful, it retrieves the canonical username and 
-persists it to the database to ensure future messages are correctly attributed.
-
-Args:
-    user_id (str): The unique Discord user ID.
-    secret_key (str): The UEX API secret key provided by the user.
-    bearer_token (str): The UEX API bearer token provided by the user.
-    username_guess (str): The username input by the user for validation.
-    session (aiohttp.ClientSession): The active asynchronous HTTP session.
-
-Returns:
-    str | None: The confirmed UEX username if successful, or None if the 
-                API call fails or credentials are invalid.
-"""
 async def fetch_and_store_uex_username(user_id: str, secret_key: str, bearer_token: str, username_guess: str, session: "aiohttp.ClientSession") -> str | None:
+    
+    """
+    Fetches the official UEX username via API and updates the user's session in the database.
+
+    This function validates the provided credentials (bearer token and secret key) 
+    against the UEX API. If successful, it retrieves the canonical username and 
+    persists it to the database to ensure future messages are correctly attributed.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+        secret_key (str): The UEX API secret key provided by the user.
+        bearer_token (str): The UEX API bearer token provided by the user.
+        username_guess (str): The username input by the user for validation.
+        session (aiohttp.ClientSession): The active asynchronous HTTP session.
+
+    Returns:
+        str | None: The confirmed UEX username if successful, or None if the 
+                    API call fails or credentials are invalid.
+    """
+    
     """
     Retrieve the UEX username via API using the past session.
     """
@@ -54,26 +57,6 @@ async def fetch_and_store_uex_username(user_id: str, secret_key: str, bearer_tok
         return None
 
 
-
-"""
-Sends a message to an ongoing UEX negotiation via the UEX API.
-
-This function bridges Discord message replies to the UEX platform. It sends 
-a POST request with the negotiation hash and the message content, using the 
-user's specific authentication headers.
-
-Args:
-    session (aiohttp.ClientSession): The shared asynchronous HTTP session.
-    bearer_token (str): The user's UEX bearer token.
-    secret_key (str): The user's UEX secret key.
-    notif_hash (str): The unique hash identifier for the specific negotiation.
-    message (str): The text content to be sent to the negotiation partner.
-    is_production (int): Flag to toggle between production (1) and test (0) environments.
-
-Returns:
-    tuple[bool, str]: A tuple containing a success boolean and an error message 
-                      (which is empty if the operation was successful).
-"""
 async def send_uex_message(
     *,
     session: aiohttp.ClientSession,
@@ -83,21 +66,25 @@ async def send_uex_message(
     message: str,
     is_production: int = 1
 ) -> tuple[bool, str]:
+    
     """
-    Send a message to a UEX negotiation.
+    Sends a message to an ongoing UEX negotiation via the UEX API.
+
+    This function bridges Discord message replies to the UEX platform. It sends 
+    a POST request with the negotiation hash and the message content, using the 
+    user's specific authentication headers.
 
     Args:
-        session (aiohttp.ClientSession): Shared HTTP session
-        bearer_token (str): UEX bearer token
-        secret_key (str): UEX secret key
-        notif_hash (str): Negotiation hash
-        message (str): Message text
-        is_production (int): 1 production, 0 test
+        session (aiohttp.ClientSession): The shared asynchronous HTTP session.
+        bearer_token (str): The user's UEX bearer token.
+        secret_key (str): The user's UEX secret key.
+        notif_hash (str): The unique hash identifier for the specific negotiation.
+        message (str): The text content to be sent to the negotiation partner.
+        is_production (int): Flag to toggle between production (1) and test (0) environments.
 
     Returns:
-        tuple[bool, str]:
-        - True, "" if successful
-        - False, error message if unsuccessful
+        tuple[bool, str]: A tuple containing a success boolean and an error message 
+                        (which is empty if the operation was successful).
     """
 
     headers = {

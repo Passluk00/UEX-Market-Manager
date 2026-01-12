@@ -2,17 +2,19 @@ import logging
 
 
 
-"""
-Displays the application's ASCII art logo in the system logs.
 
-This function is called during the startup sequence to provide visual 
-confirmation that the bot is initializing. It prints a stylized 
-representation of the UEX/Bot logo using the logging system.
-
-Returns:
-    None
-"""
 def show_logo():
+    
+    """
+    Displays the application's ASCII art logo in the system logs.
+
+    This function is called during the startup sequence to provide visual 
+    confirmation that the bot is initializing. It prints a stylized 
+    representation of the UEX/Bot logo using the logging system.
+
+    Returns:
+        None
+    """
     
     logo = r"""     
     

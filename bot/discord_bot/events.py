@@ -104,50 +104,6 @@ async def on_message(message: discord.Message):
    
     lang = await db_session.get_user_language(uid)
    
-# ---------- Insert Bearer/Secret/Username keys ----------
-    if not session.get("bearer_token") or not session.get("secret_key") or not session.get("username"):
-        if all(x in content for x in ("bearer:", "secret:", "username:")):
-            try:
-                # Usa una regex robusta per estrarre i 3 campi
-                match = re.search(
-                    r"bearer:\s*([^\s]+)\s+secret:\s*([^\s]+)\s+username:\s*([^\s]+)",
-                    content,
-                    re.IGNORECASE
-                )
-                if not match:
-                    await message.channel.send("❌ Formato non corretto. Usa: `bearer:<token> secret:<secret_key> username:<nick>`")
-                    return
-
-                bearer = match.group(1).strip().replace("<", "").replace(">", "")
-                secret = match.group(2).strip().replace("<", "").replace(">", "")
-                username_to_test = match.group(3).strip().replace("<", "").replace(">", "")
-                
-                await db_session.save_user_session(
-                    user_id=uid,
-                    thread_id=session.get("thread_id"),
-                    uex_username=username_to_test,
-                    bearer_token=bearer,
-                    secret_key=secret
-                )
-
-
-# ---------- Retrieve and verify UEX username ----------
-                try:
-                    username = await fetch_and_store_uex_username(uid, secret, bearer, username_to_test, aiohttp_session)
-                    if username:
-                        await message.channel.send(t(lang, "credentials_saved", username=username),)
-                    else:
-                        await message.channel.send(t(lang, "credentials_saved_error"),)
-                except Exception as e:
-                    logging.warning(f"⚠️ Error fetching username UEX for {uid}: {e}")
-                    await message.channel.send(t(lang, "credentials_saved_error"),)
-
-            except Exception as e: 
-                logging.exception(f"❌ Error parsing user credentials {uid}: {e}")
-                await message.channel.send(t(lang, "credentials_format_error"),)
-        else:
-            pass
-
 # ---------- If the user is responding to a notification ----------
     if message.reference and message.reference.resolved:
         replied_msg = message.reference.resolved

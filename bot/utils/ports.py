@@ -5,25 +5,28 @@ from config import SYSTEM_LANGUAGE
 
 
 
-"""
-Scans for and terminates any existing process occupying a specific network port.
 
-This utility is used during startup to ensure the required port is free. For 
-security, it includes protections against killing critical system processes 
-(like SSH), ignores its own PID, and only targets specific process types 
-(Python or Gunicorn).
-
-Args:
-    port (int): The network port number to check and clear.
-
-Returns:
-    bool: True if a process was found and successfully terminated, False otherwise.
-
-Note:
-    The function attempts a graceful termination (terminate()) followed by a 
-    forced kill (kill()) if the process does not exit within 3 seconds.
-"""
 def kill_process_on_port(port: int) -> bool:
+    
+    """
+    Scans for and terminates any existing process occupying a specific network port.
+
+    This utility is used during startup to ensure the required port is free. For 
+    security, it includes protections against killing critical system processes 
+    (like SSH), ignores its own PID, and only targets specific process types 
+    (Python or Gunicorn).
+
+    Args:
+        port (int): The network port number to check and clear.
+
+    Returns:
+        bool: True if a process was found and successfully terminated, False otherwise.
+
+    Note:
+        The function attempts a graceful termination (terminate()) followed by a 
+        forced kill (kill()) if the process does not exit within 3 seconds.
+    """
+    
     # --- SECURITY PROTECTION ---
     # Never touch port 22 (SSH) or invalid ports
     if port == 22 or port is None:

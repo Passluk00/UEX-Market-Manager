@@ -86,7 +86,7 @@ class DataModal(ui.Modal):
         
 
 
-# --- View guida con bottone al centro delle frecce ---
+# --- View guide with button in the center of the arrows ---
 class SetupTutorialView(ui.View):
     
     def __init__(self, lang: str, user_id: str, username: str):
@@ -99,7 +99,7 @@ class SetupTutorialView(ui.View):
         self.total_pages = 3
         self.aiohttp_session = get_http_session()
 
-        # Bottone per aprire il modal
+        # Button to open the modal
         self.data_button = ui.Button(
             label=t(lang, "guide_button_insert"),
             style=discord.ButtonStyle.green,
@@ -107,7 +107,7 @@ class SetupTutorialView(ui.View):
         )
         self.data_button.callback = self.open_modal
 
-        # Chiama update_buttons solo dopo che il bottone esiste
+        # Call update_buttons only after the button exists
         self.update_buttons()
 
     def create_embed(self):
@@ -138,14 +138,14 @@ class SetupTutorialView(ui.View):
         return embed
 
     def update_buttons(self):
-        # Disabilita le frecce ai bordi
+        # Disable border arrows
         self.prev_page.disabled = (self.current_page == 0)
         self.next_page.disabled = (self.current_page == self.total_pages - 1)
 
-        # Mostra il bottone dati solo a pagina 1
+        # Show data button only on page 1
         if self.current_page == 1:
             if self.data_button not in self.children:
-                # Inserisco il bottone tra le frecce: prima rimuovo tutte le frecce e li ricreo nell'ordine
+                # I insert the button between the arrows: first I remove all the arrows and recreate them in order
                 self.clear_items()
                 self.add_item(self.prev_page)
                 self.add_item(self.data_button)
@@ -157,14 +157,14 @@ class SetupTutorialView(ui.View):
     async def open_modal(self, interaction: discord.Interaction, ):
         await interaction.response.send_modal(DataModal(self.lang, interaction.user.id, self.aiohttp_session))
 
-    # Bottone freccia sinistra
+    # Left arrow button
     @ui.button(label="⬅️", style=discord.ButtonStyle.gray)
     async def prev_page(self, interaction: discord.Interaction, button: ui.Button):
         self.current_page -= 1
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    # Bottone freccia destra
+    # Right arrow button
     @ui.button(label="➡️", style=discord.ButtonStyle.blurple)
     async def next_page(self, interaction: discord.Interaction, button: ui.Button):
         self.current_page += 1

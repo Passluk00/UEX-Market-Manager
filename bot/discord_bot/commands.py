@@ -7,7 +7,7 @@ import db.sessions as sessions
 from discord_bot.bot import bot
 from discord import app_commands
 from config import SYSTEM_LANGUAGE
-from utils.roles_management import has_uex_manager_role, is_user_banned
+from utils.roles_management import has_uex_manager_role
 from discord_bot.views import OpenThreadButton
 
 
@@ -39,7 +39,6 @@ async def add_welcome_message(interaction: discord.Interaction, message: str):
     user_id = str(interaction.user.id)
     lang = await sessions.resolve_and_store_language(interaction)
 
-    # Salva direttamente il messaggio di benvenuto nel DB
     await sessions.save_user_session(
         user_id=user_id,
         welcome_message=message
@@ -116,7 +115,7 @@ async def enable_welcome_mex(interaction: discord.Interaction, enable: bool):
 async def add_button(
     interaction: discord.Interaction,
     channel: discord.TextChannel,
-    language: app_commands.Choice[str]  # OBBLIGATORIO
+    language: app_commands.Choice[str]
 ):
     
     """
@@ -315,13 +314,13 @@ bot.tree.add_command(admin_group)
 
 @bot.tree.interaction_check
 async def check_user_ban(interaction: discord.Interaction) -> bool:
-    # sicurezza: solo in guild
+    # security: only on guild
     if not interaction.guild:
         return True
 
     member = interaction.user
 
-    # ignora admin (UEX Manager)
+    # ignore admin (UEX Manager)
     uex_manager_role = discord.utils.get(member.roles, name="UEX Manager")
     if uex_manager_role:
         return True
@@ -330,14 +329,13 @@ async def check_user_ban(interaction: discord.Interaction) -> bool:
     if banned:
         lang = await sessions.resolve_and_store_language(interaction)
 
-        # IMPORTANTE: interaction_check deve restituire False
         await interaction.response.send_message(
             t(lang, "access_denied_ban", reason=reason),
             ephemeral=True
         )
-        return False  # ⛔ blocca TUTTO
+        return False  # ⛔ Block All
 
-    return True  # ✅ consente il comando
+    return True
 
     
 
