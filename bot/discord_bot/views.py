@@ -1,11 +1,12 @@
 import discord
 import aiohttp
-from discord import ui
 import logging
+from discord import ui
 from utils.i18n import t
 from config import TUNNEL_URL
 import db.sessions as sessions
 from services.uex_api import fetch_and_store_uex_username
+from utils.roles_management import assign_uex_user_role
 
 
 
@@ -87,14 +88,16 @@ class DataModal(ui.Modal):
 
 # --- View guida con bottone al centro delle frecce ---
 class SetupTutorialView(ui.View):
-    def __init__(self, lang: str, user_id: str, username: str, aiohttp_session: aiohttp.ClientSession):
+    
+    def __init__(self, lang: str, user_id: str, username: str):
+        from webserver.session_http import get_http_session
         super().__init__(timeout=None)
         self.lang = lang
         self.user_id = user_id
         self.username = username
         self.current_page = 0
         self.total_pages = 3
-        self.aiohttp_session = aiohttp_session
+        self.aiohttp_session = get_http_session()
 
         # Bottone per aprire il modal
         self.data_button = ui.Button(
@@ -168,14 +171,21 @@ class SetupTutorialView(ui.View):
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
+
+
 class OpenThreadButton(ui.View):
-    def __init__(self, lang, aiohttp_session: aiohttp.ClientSession):
+    def __init__(self, lang):
         super().__init__(timeout=None)
         self.lang = lang
-        self.aiohttp_session = aiohttp_session
 
     @ui.button(label="Open Chat", style=discord.ButtonStyle.primary, custom_id="open_thread_button")
     async def open_thread(self, interaction: discord.Interaction, button: ui.Button):
+        
+        allowed = await assign_uex_user_role(interaction)
+        
+        if not allowed:
+            return
+        
         lang = await sessions.resolve_and_store_language(interaction)
         user_id = str(interaction.user.id)
         channel = interaction.channel
@@ -207,7 +217,7 @@ class OpenThreadButton(ui.View):
             )
 
             #3. Launch the Paginated Tutorial in the thread
-            tutorial_view = SetupTutorialView(lang=lang, user_id=user_id, username=interaction.user.name, aiohttp_session=self.aiohttp_session)
+            tutorial_view = SetupTutorialView(lang=lang, user_id=user_id, username=interaction.user.name)
             await thread.send(
                 content=f"👋 {interaction.user.mention}", 
                 embed=tutorial_view.create_embed(), 

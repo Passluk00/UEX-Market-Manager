@@ -318,5 +318,4 @@ async def remove_sessions_by_thread(thread_id: int) -> int:
         import logging
         logging.exception(f"💥 Error removing sessions by thread {thread_id}: {e}")
     
-    return removed_count
-
+    return removed_count      

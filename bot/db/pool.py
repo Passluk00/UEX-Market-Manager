@@ -52,6 +52,13 @@ async def init_db():
                     seller_id TEXT NOT NULL
                 );
             """)
+            
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS banned_users (
+                    user_id TEXT PRIMARY KEY,
+                    motivation TEXT
+                );
+            """)
 
         logging.info("📦 Database initialized and ready")
         return db_pool

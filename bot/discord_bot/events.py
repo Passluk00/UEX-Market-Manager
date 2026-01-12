@@ -9,10 +9,10 @@ from config import TUNNEL_URL
 from discord_bot.bot import bot
 from utils.logo import show_logo
 import db.sessions as db_session
-from discord_bot.views import OpenThreadButton
 from webserver.server import start_aiohttp_server
 from services.notifications import send_startup_notification
 from services.uex_api import fetch_and_store_uex_username, send_uex_message
+from webserver.session_http import init_http
 
 aiohttp_session = None
 
@@ -35,6 +35,8 @@ Returns:
 """
 @bot.event
 async def on_ready():
+    
+    from discord_bot.views import OpenThreadButton
 
 # 1. Show logo at startup
     show_logo()
@@ -44,8 +46,7 @@ async def on_ready():
     await send_startup_notification()
     
     
-# 3. Start Database and sessions ( Operation chan take a while)
-    global aiohttp_session
+# 3. Start Database
     
     try:
         await init_db()
@@ -54,9 +55,8 @@ async def on_ready():
         logging.critical(f"❌ DB not initialized: {e}")
         return
 
-    if aiohttp_session is None:
-        aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5))
-        logging.info("🌐 aiohttp Sessione initialized")
+    await init_http()
+    logging.info("🌐 aiohttp session initialized")
 
 # 4. Start Server (Last fase)
     logging.info(f"📡 Base URL webhook: {TUNNEL_URL}")
@@ -70,7 +70,7 @@ async def on_ready():
     except Exception as e:
         logging.error(f"❌ Error synchronizing commands: {e}")
         
-    bot.add_view(OpenThreadButton(lang=SYSTEM_LANGUAGE, aiohttp_session= aiohttp_session))
+    bot.add_view(OpenThreadButton(lang=SYSTEM_LANGUAGE))
 
 
 
@@ -89,6 +89,10 @@ Args:
 Returns:
     None
 """
+
+# TODO modificare questa parte di codice rimuovere inserimento keys 
+
+
 @bot.event
 async def on_message(message: discord.Message):
     if message.author.bot or not isinstance(message.channel, discord.Thread):
