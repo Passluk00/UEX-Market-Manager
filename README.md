@@ -130,6 +130,11 @@ While the original version focused on basic notification delivery, this **new it
 
     # --- LOGGING ---
     LOG_PATH="./bot.log"                        # Path where the bot will store its execution logs
+
+    # --- CERTBOT CONFIGURATION ---
+    CERTBOT_EMAIL="test@gmail.com"          # Email for Let's Encrypt registration and recovery
+    DOMAIN="yourdomain.com"                 # Your domain for SSL certificate generation
+
     ```
     ### ⚠️ Important
     * The `BASE_WEBHOOK_URL` must be publicly accessible.
@@ -149,15 +154,44 @@ While the original version focused on basic notification delivery, this **new it
 
     No manual setup is required if environment variables are correct.
 
-* ## 🌐 Step 4 — Nginx Configuration
+* ## 🌐 Step 4 — Nginx & SSL Configuration
 
-    Edit the file:
+    For the first run, keep the initial `nginx/conf.d/default.conf` unchanged (HTTP only). This allows Nginx to start without SSL certificates so Certbot can validate your domain.
 
+    ### 1. Generate SSL Certificates
+    Run the following commands to start Nginx and request certificates from Let's Encrypt:
+
+    ```bash
+    # Start Nginx in HTTP mode
+    docker compose up -d nginx
+
+    # Run Certbot to generate certificates
+    docker run --rm -it \
+    -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+    -v "$(pwd)/certbot/www:/var/www/certbot" \
+    certbot/certbot certonly --webroot \
+    --webroot-path=/var/www/certbot \
+    --email YOUR_EMAIL@example.com --agree-tos --no-eff-email \
+    -d yourdomain.com
     ```
-    nginx/conf.d/default.conf
-    ```
+
+    ---
+
+    ### 2. Enable HTTPS Configuration
     
-    Example configuration:
+    Once you see the message **"Successfully received certificate"**, your certificates will be located in certbot/conf/live/yourdomain.com/.
+
+    * **Set correct permissions** for the certificates (required for Nginx to read them):
+        ```
+        sudo chmod -R 755 ./certbot/conf/
+        ```
+
+    * **Replace the configuration:** Delete your current `default.conf` and replace it with the production version (or rename `production.default.conf` to `default.conf`).
+
+    ---
+
+    Edit `nginx/conf.d/default.conf` as follows:
+
     
     ```
     server {
@@ -209,6 +243,15 @@ While the original version focused on basic notification delivery, this **new it
 
     After SSL is enabled, port 443 will be automatically handled by Certbot.
 
+    ---
+
+    ### 3. **Last Step Restart the Stack**
+    ```
+    docker compose down && docker compose up -d
+    ```
+
+
+
 
 * ## 🔒 Step 5 — SSL Certificates (Certbot)
 
@@ -242,7 +285,7 @@ While the original version focused on basic notification delivery, this **new it
             volumes:
             - ./bot:/app
             expose:
-            - "20187" # change this if you change the server port
+            - ${PORT}$
             networks:
             - backend
             env_file:
@@ -277,13 +320,8 @@ While the original version focused on basic notification delivery, this **new it
             - ./certbot/conf:/etc/letsencrypt
             - ./certbot/www:/var/www/certbot
             # Command changed to not attempt infinite renewal if it fails
-            command: >
-            certonly --webroot
-            --webroot-path=/var/www/certbot
-            --email test@gmail.com            # Change with your email for the cert
-            --agree-tos
-            --no-eff-email
-            -d YOUR DOMAIN                    # Cahange with Your domain                
+                command: certonly --webroot --webroot-path=/var/www/certbot --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN}
+                
             
 
         # Watchdog Service
@@ -322,10 +360,9 @@ While the original version focused on basic notification delivery, this **new it
             driver: bridge
     ```
 
-    Replace:
+    TODO
     
-    
-    * Where you see a comment with `#` change them with the necessary data
+    * Check if all the data is correct
     
 
 
@@ -384,12 +421,16 @@ While the original version focused on basic notification delivery, this **new it
 
     **1.** Invite the bot to your Discord server
 
-    **2.** Use the management command to create the entry point button:
+    **2.** Create **UEX Manager** and **UEX User roles**
+    
+    **3.** **Assign** the person who should manage the bot **The UEX Manager** role.
+
+    **4.** Use the management command to create the entry point button:
     ```
-    /add channel:#uex-market	
+    /admin add channel:#uex-market	language: it / en / es / fr / de / pl / pt / ru / zh
     ```
 
-    **3.** Users can now:
+    **5.** Users can now:
 
     * Open their private thread
     * Insert API credentials

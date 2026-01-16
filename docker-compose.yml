@@ -8,7 +8,7 @@ services:
     volumes:
       - ./bot:/app
     expose:
-      - "20187" # change this if you change the server port
+      - ${PORT}
     networks:
       - backend
     env_file:
@@ -43,14 +43,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     # Command changed to not attempt infinite renewal if it fails
-    command: >
-      certonly --webroot
-      --webroot-path=/var/www/certbot
-      --email test@gmail.com            # Change with your email for the cert
-      --agree-tos
-      --no-eff-email
-      -d YOUR DOMAIN                    # Cahange with Your domain                
-      
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN}
+
 
 # Watchdog Service
   watchdog:
