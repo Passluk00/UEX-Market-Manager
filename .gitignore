@@ -8,6 +8,7 @@ venv/
 
 # Docker & Sistem
 .env
+.env2
 *.log
 docker-compose.override.yml
 

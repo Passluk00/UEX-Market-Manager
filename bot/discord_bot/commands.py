@@ -9,7 +9,7 @@ from discord import app_commands
 from config import SYSTEM_LANGUAGE
 from utils.roles_management import has_uex_manager_role
 from discord_bot.views import OpenThreadButton
-
+from bot.db.manitence import set_maintenance, get_maintenance_status
 
 admin_group = app_commands.Group(
     name="admin",
@@ -304,6 +304,105 @@ async def unban_user(
             ephemeral=True
         )
         
+        
+
+@admin_group.command(name="set_manitence", description="set manitence")  
+@app_commands.describe(
+    start="Start datetime (YYYY-MM-DD HH:MM)",
+    end="End datetime (YYYY-MM-DD HH:MM)",
+    message="Maintenance message"
+)
+@has_uex_manager_role()
+async def manitence(
+    interaction: discord.Interaction,
+    start="Start datetime (YYYY-MM-DD HH:MM)",
+    end="End datetime (YYYY-MM-DD HH:MM)",
+    message="Maintenance message"
+    ):
+    
+    from datetime import datetime
+    
+    lang = await sessions.resolve_and_store_language(interaction)
+    
+    try:
+    
+        start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M")
+        end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M")
+        
+        await set_maintenance(
+            enabled=False,
+            message=message,
+            start=start_dt,
+            end=end_dt
+        )
+            
+        await interaction.response.send_message(
+            t(lang=lang,key="set_maintenance",start=start_dt, end=end_dt)
+        )
+        
+        logging.info(
+            t(lang=lang, key="set_maintenance",start=start_dt, end=end_dt)
+        )
+                 
+        
+        
+    except Exception as e:
+        interaction.response.send_message(
+            t(lang=lang, key="error_set_maintenance", e=e)
+        )
+    
+        logging.error(
+            t(lang=lang,  key="error_set_maintenance", e=e)
+        )
+        
+
+@admin_group.command(name="maintenance", description="Enable or disable maintenance mode")
+@app_commands.describe(
+    enable="Enable or disable maintenance",
+    message="Optional maintenance message"
+)
+@has_uex_manager_role()
+async def maintenance_cmd(
+    interaction: discord.Interaction,
+    enable: bool,
+    message: str | None = None
+):
+    await set_maintenance(enabled=enable, message=message)
+
+    await interaction.response.send_message(
+        f"🛠️ Manutenzione {'ATTIVATA' if enable else 'DISATTIVATA'}",     # modificare con nuovo sistema
+        ephemeral=True
+    )
+
+
+
+@admin_group.command(name="broadcast", description="Send a message to all users")
+@app_commands.describe(message="Message to send to all users")
+@has_uex_manager_role()
+async def broadcast(interaction: discord.Interaction, message: str):
+
+    sent = 0
+    async with pool.db_pool.acquire() as conn:
+        users = await conn.fetch("SELECT DISTINCT user_id FROM sessions")
+
+    for row in users:
+        user = await bot.fetch_user(int(row["user_id"]))
+        try:
+            await user.send(
+                f"📢 **Avviso dal bot**\n{message}"
+            )
+            sent += 1
+        except:
+            pass  # DM chiusi
+
+    await interaction.response.send_message(
+        f"📨 Messaggio inviato a {sent} utenti",
+        ephemeral=True
+    )
+
+
+
+
 
 bot.tree.add_command(admin_group)
 
@@ -334,6 +433,18 @@ async def check_user_ban(interaction: discord.Interaction) -> bool:
             ephemeral=True
         )
         return False  # ⛔ Block All
+    
+    status = await get_maintenance_status()
+    
+    if status and status["maintenance"]:
+        msg = status["maintenance_message"] or "🛠️ Bot in manutenzione"
+        await interaction.response.send_message(
+            f"🚧 **Manutenzione attiva**\n{msg}",                       # Modificare con nuovo sistema
+            ephemeral=True
+        )
+        return False
+    
+
 
     return True
 
