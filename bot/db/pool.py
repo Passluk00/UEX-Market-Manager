@@ -59,6 +59,16 @@ async def init_db():
                     motivation TEXT
                 );
             """)
+            
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS bot_status (
+                    id INT PRIMARY KEY,
+                    maintenance BOOLEAN DEFAULT FALSE,
+                    maintenance_message TEXT,
+                    maintenance_start TIMESTAMP,
+                    maintenance_end TIMESTAMP
+                );
+            """)
 
         logging.info("📦 Database initialized and ready")
         return db_pool

@@ -32,26 +32,28 @@ async def assign_uex_user_role(interaction: discord.Interaction) -> bool:
     guild = interaction.guild
     member = interaction.user
 
-    # 1. Check ban
-    banned, motivation = await ban.is_banned(str(member.id))
-    if banned:
-        lang = await sessions.resolve_and_store_language(interaction)
-        await interaction.response.send_message(
-            t(lang, "user_banned", reason=motivation),
-            ephemeral=True
-        )
-        return False
+    check_manage = has_uex_manager_role()
+    if check_manage:
+        logging.debug(f"⚠️ User {member} has UEX Manager role, skipping UEX user role assignment")
+        return True
 
+    # 1. Check ban
+    
+    check_ban = await is_user_banned(interaction)
+    if check_ban:
+        logging.debug(f"🚫 User {member} is banned, cannot assign role")
+        return False
+    
     # 2. Get role
     role = discord.utils.get(guild.roles, name="UEX user")
     if not role:
         logging.error("❌ Role 'UEX user' not found")
-        return True  # non blocchiamo
+        return True  # Role missing, but not a ban, so return True
 
     # 3. Assign role if missing
     if role not in member.roles:
         await member.add_roles(role, reason="First bot interaction")
-
+        logging.debug(f"✅ Assigned 'UEX user' role to {member}")
     return True
 
 
@@ -64,8 +66,11 @@ async def is_user_banned(interaction: discord.Interaction) -> bool:
     lang = await sessions.resolve_and_store_language(interaction)
 
     if banned:
+        logging.debug(f"🚫 User {member} is banned: {reason}")
         await interaction.response.send_message(
             t(lang, "access_denied_ban", reason=reason),
             ephemeral=True
         )
-        return False
+        return True
+    
+    return False

@@ -4,10 +4,16 @@ import logging
 from discord import ui
 from utils.i18n import t
 from config import TUNNEL_URL
+from utils.status import check_user_security
 import db.sessions as sessions
 from services.uex_api import fetch_and_store_uex_username
 from utils.roles_management import assign_uex_user_role
+from utils.status import build_status_embed
 
+
+class StatusView(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
 
 
 class DataModal(ui.Modal):
@@ -46,6 +52,11 @@ class DataModal(ui.Modal):
         self.add_item(self.user_input)
 
     async def on_submit(self, interaction: discord.Interaction):
+        
+        sec = await check_user_security(interaction)
+        if not sec:          
+            return
+        
         try:
             verified_username = await fetch_and_store_uex_username(
                 user_id=self.user_id,
@@ -80,10 +91,6 @@ class DataModal(ui.Modal):
                 t(self.lang, "generic_error"),
                 ephemeral=True
             )
-
-
-        
-        
 
 
 # --- View guide with button in the center of the arrows ---
@@ -160,6 +167,11 @@ class SetupTutorialView(ui.View):
     # Left arrow button
     @ui.button(label="⬅️", style=discord.ButtonStyle.gray)
     async def prev_page(self, interaction: discord.Interaction, button: ui.Button):
+        
+        sec = await check_user_security(interaction)
+        if not sec:          
+            return
+        
         self.current_page -= 1
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
@@ -167,6 +179,11 @@ class SetupTutorialView(ui.View):
     # Right arrow button
     @ui.button(label="➡️", style=discord.ButtonStyle.blurple)
     async def next_page(self, interaction: discord.Interaction, button: ui.Button):
+        
+        sec = await check_user_security(interaction)
+        if not sec:          
+            return
+        
         self.current_page += 1
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
@@ -181,10 +198,11 @@ class OpenThreadButton(ui.View):
     @ui.button(label="Open Chat", style=discord.ButtonStyle.primary, custom_id="open_thread_button")
     async def open_thread(self, interaction: discord.Interaction, button: ui.Button):
         
-        allowed = await assign_uex_user_role(interaction)
-        
-        if not allowed:
+
+        sec = await check_user_security(interaction)
+        if not sec:          
             return
+        
         
         lang = await sessions.resolve_and_store_language(interaction)
         user_id = str(interaction.user.id)

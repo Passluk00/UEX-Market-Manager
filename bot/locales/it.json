@@ -93,5 +93,10 @@
   "welcome_message": "👋 Ciao {username}!\n\n👉 Ottieni il Bearer Token\n\n1- Accedi a UEX...\n{invisible}",
   "welcome_saved": "✅ Messaggio di benvenuto salvato:\n```{message}```",
   "welcome_toggle": "✅ Messaggio di benvenuto {status} con successo.",
-  "you_replied": "**Hai risposto:**\n> {message}"
-}
+  "you_replied": "**Hai risposto:**\n> {message}",
+  "broadcast_sent_to": "📢 Messaggio trasmesso a tutti gli utenti: {sent}",
+  "broadcast_message": "📢 **Messaggio dal Team UEX Bot:**\n\n{message}",
+  "set_maintenance": "⚙️ Modalità manutenzione Attivata\n\nData Inizio: {start}\n\nData Fine: {end}\n\nMessaggio:\n{message}",
+  "error_set_maintenance": "❌ Errore durante l'impostazione della modalità manutenzione. Errore:\n {e}",
+  "maintenance_status_changed": "⚙️ Modalità manutenzione {status}."
+} 

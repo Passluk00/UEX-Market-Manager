@@ -7,9 +7,10 @@ import db.sessions as sessions
 from discord_bot.bot import bot
 from discord import app_commands
 from config import SYSTEM_LANGUAGE
+from utils.status import build_status_embed, check_user_security, update_status_message
 from utils.roles_management import has_uex_manager_role
-from discord_bot.views import OpenThreadButton
-from bot.db.manitence import set_maintenance, get_maintenance_status
+from discord_bot.views import OpenThreadButton, StatusView
+from db.maintenance import set_maintenance
 
 admin_group = app_commands.Group(
     name="admin",
@@ -34,7 +35,9 @@ async def add_welcome_message(interaction: discord.Interaction, message: str):
     Returns:
         None
     """
-    
+    sec = await check_user_security(interaction)
+    if not sec:          
+        return
     
     user_id = str(interaction.user.id)
     lang = await sessions.resolve_and_store_language(interaction)
@@ -65,7 +68,9 @@ async def enable_welcome_mex(interaction: discord.Interaction, enable: bool):
     Returns:
         None
     """
-
+    sec = await check_user_security(interaction)
+    if not sec:          
+        return
     
     lang = await sessions.resolve_and_store_language(interaction)
 
@@ -130,12 +135,29 @@ async def add_button(
     Returns:
         None
     """
-    
+    from utils.status_storage import set_status_message
     
     
     lang = language.value
 
     try:
+        
+        embed_status = await build_status_embed()
+        msg = await interaction.channel.send(embed=embed_status, view=StatusView())
+        
+        set_status_message(interaction.channel.id, msg.id)
+        
+        
+        
+        #### TODO rimuovere questo ed implementarlo nel messaggio di risposta al comando /add
+        
+    #    await interaction.response.send_message(
+    #        t(lang, "status_message_set"),
+    #        ephemeral=True
+    #    )
+        
+        
+        
         view = OpenThreadButton(lang=lang)
 
         embed = discord.Embed(
@@ -149,6 +171,9 @@ async def add_button(
 
         await channel.send(embed=embed, view=view)
 
+
+        ### Aggiungere a questo 
+        
         await interaction.response.send_message(
             t(lang, "add_success", channel=channel.mention),
             ephemeral=True
@@ -233,7 +258,8 @@ async def stats(interaction: discord.Interaction):
 @has_uex_manager_role()
 async def ban_user(
     interaction: discord.Interaction,
-    user: discord.Member
+    user: discord.Member,
+    reason: str
 ):
     lang = await sessions.resolve_and_store_language(interaction)
 
@@ -259,7 +285,7 @@ async def ban_user(
         )
         
         await sessions.remove_user_session(user_id=user.id)
-        await ban.ban_user(user_id=user.id)
+        await ban.ban_user(user_id=user.id, reason=reason)
         
         await interaction.response.send_message(
             t(lang, "deleted_user", username=user.name),
@@ -305,55 +331,66 @@ async def unban_user(
         )
         
         
-
-@admin_group.command(name="set_manitence", description="set manitence")  
+@admin_group.command(name="set_maintenance", description="Schedule bot maintenance")
 @app_commands.describe(
     start="Start datetime (YYYY-MM-DD HH:MM)",
     end="End datetime (YYYY-MM-DD HH:MM)",
     message="Maintenance message"
 )
 @has_uex_manager_role()
-async def manitence(
+async def maintenance(
     interaction: discord.Interaction,
-    start="Start datetime (YYYY-MM-DD HH:MM)",
-    end="End datetime (YYYY-MM-DD HH:MM)",
-    message="Maintenance message"
-    ):
-    
+    start: str,
+    end: str,
+    message: str
+):
     from datetime import datetime
     
     lang = await sessions.resolve_and_store_language(interaction)
-    
+
+    # Parsing sicuro
     try:
-    
         start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M")
-        end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M")
-        
-        await set_maintenance(
-            enabled=False,
-            message=message,
-            start=start_dt,
-            end=end_dt
-        )
-            
+    except ValueError:
         await interaction.response.send_message(
-            t(lang=lang,key="set_maintenance",start=start_dt, end=end_dt)
+            "❌ Formato start non valido, usa YYYY-MM-DD HH:MM",
+            ephemeral=True
         )
-        
+        return
+
+    try:
+        end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M")
+    except ValueError:
+        await interaction.response.send_message(
+            "❌ Formato end non valido, usa YYYY-MM-DD HH:MM",
+            ephemeral=True
+        )
+        return
+
+    try:
+        await set_maintenance(enabled=True, message=message, start=start_dt, end=end_dt)
+        await update_status_message(interaction.client)
+        await interaction.response.send_message(
+            t(lang=lang,key="set_maintenance",start=start_dt, end=end_dt, message=message)
+        )
         logging.info(
-            t(lang=lang, key="set_maintenance",start=start_dt, end=end_dt)
+            f"⚙️ Manutenzione programmata da {interaction.user} "
+            f"start={start_dt}, end={end_dt}, message={message}"
         )
-                 
-        
-        
+
     except Exception as e:
-        interaction.response.send_message(
-            t(lang=lang, key="error_set_maintenance", e=e)
-        )
-    
-        logging.error(
-            t(lang=lang,  key="error_set_maintenance", e=e)
-        )
+        if interaction.response.is_done():
+            await interaction.followup.send(
+                t(lang=lang, key="error_set_maintenance", e=e),
+                ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                t(lang=lang, key="error_set_maintenance", e=e),
+                ephemeral=True
+            )
+        logging.error(f"❌ Errore set manutenzione: {e}")
+
         
 
 @admin_group.command(name="maintenance", description="Enable or disable maintenance mode")
@@ -367,13 +404,20 @@ async def maintenance_cmd(
     enable: bool,
     message: str | None = None
 ):
-    await set_maintenance(enabled=enable, message=message)
+    
+    print("🔥 interaction_check CALLED", interaction.type)
 
+    lang = await sessions.resolve_and_store_language(interaction)
+    
+    await set_maintenance(enabled=enable, message=message)
+    await update_status_message(interaction.client)
+    
     await interaction.response.send_message(
-        f"🛠️ Manutenzione {'ATTIVATA' if enable else 'DISATTIVATA'}",     # modificare con nuovo sistema
+        t(lang, "maintenance_status_changed",
+          status=t(lang, "enabled") if enable else t(lang, "disabled")
+        ),
         ephemeral=True
     )
-
 
 
 @admin_group.command(name="broadcast", description="Send a message to all users")
@@ -381,22 +425,30 @@ async def maintenance_cmd(
 @has_uex_manager_role()
 async def broadcast(interaction: discord.Interaction, message: str):
 
+    lang = await sessions.resolve_and_store_language(interaction)
+
     sent = 0
     async with pool.db_pool.acquire() as conn:
         users = await conn.fetch("SELECT DISTINCT user_id FROM sessions")
 
+    logging.debug(f"📢 Broadcasting message to {len(users)} users")
+
     for row in users:
         user = await bot.fetch_user(int(row["user_id"]))
         try:
+            logging.debug(f"📩 Sending broadcast to user {user.id}")
             await user.send(
-                f"📢 **Avviso dal bot**\n{message}"
+                t(lang=lang, key="broadcast_message", message=message)
             )
             sent += 1
-        except:
-            pass  # DM chiusi
+        except discord.Forbidden:
+            logging.warning(f"❌ DM chiusi per user {user.id}")
+        except discord.HTTPException as e:
+            logging.error(f"❌ Errore HTTP DM {user.id}: {e}")
+
 
     await interaction.response.send_message(
-        f"📨 Messaggio inviato a {sent} utenti",
+        t(lang, "broadcast_sent_to", sent=sent),
         ephemeral=True
     )
 
@@ -409,47 +461,9 @@ bot.tree.add_command(admin_group)
 
 
 
-
-
 @bot.tree.interaction_check
-async def check_user_ban(interaction: discord.Interaction) -> bool:
-    # security: only on guild
-    if not interaction.guild:
-        return True
-
-    member = interaction.user
-
-    # ignore admin (UEX Manager)
-    uex_manager_role = discord.utils.get(member.roles, name="UEX Manager")
-    if uex_manager_role:
-        return True
-
-    banned, reason = await ban.is_banned(member.id)
-    if banned:
-        lang = await sessions.resolve_and_store_language(interaction)
-
-        await interaction.response.send_message(
-            t(lang, "access_denied_ban", reason=reason),
-            ephemeral=True
-        )
-        return False  # ⛔ Block All
-    
-    status = await get_maintenance_status()
-    
-    if status and status["maintenance"]:
-        msg = status["maintenance_message"] or "🛠️ Bot in manutenzione"
-        await interaction.response.send_message(
-            f"🚧 **Manutenzione attiva**\n{msg}",                       # Modificare con nuovo sistema
-            ephemeral=True
-        )
-        return False
-    
-
-
-    return True
-
-    
-
+async def check_status(interaction: discord.Interaction) -> bool:
+    return await check_user_security(interaction)
 
 #### Command For Testing Only
 

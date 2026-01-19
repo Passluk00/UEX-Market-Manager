@@ -1,7 +1,6 @@
 import re
 import discord
 import logging
-import aiohttp
 from config import *
 from utils.i18n import t
 from db.pool import init_db
@@ -9,10 +8,11 @@ from config import TUNNEL_URL
 from discord_bot.bot import bot
 from utils.logo import show_logo
 import db.sessions as db_session
+from utils.status import start_status_task
+from webserver.session_http import init_http
+from services.uex_api import send_uex_message
 from webserver.server import start_aiohttp_server
 from services.notifications import send_startup_notification
-from services.uex_api import fetch_and_store_uex_username, send_uex_message
-from webserver.session_http import init_http
 
 aiohttp_session = None
 
@@ -37,6 +37,7 @@ Returns:
 async def on_ready():
     
     from discord_bot.views import OpenThreadButton
+    from discord_bot.views import StatusView
 
 # 1. Show logo at startup
     show_logo()
@@ -70,7 +71,11 @@ async def on_ready():
     except Exception as e:
         logging.error(f"❌ Error synchronizing commands: {e}")
         
+    
+    bot.add_view(StatusView())
     bot.add_view(OpenThreadButton(lang=SYSTEM_LANGUAGE))
+    
+    start_status_task(bot)
 
 
 
