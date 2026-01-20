@@ -3,22 +3,7 @@ import logging
 import db.pool
 from utils.cryptography import encrypt,decrypt
 
-"""
-Saves or updates a user session. Uses ON CONFLICT to update existing records.
 
-Args:
-    user_id (str): The unique Discord user ID.
-    thread_id (int | None): The Discord thread ID associated with the user.
-    uex_username (str | None): The UEX platform username.
-    bearer_token (str | None): API authentication bearer token.
-    secret_key (str | None): API authentication secret key.
-    enable (bool | None): Whether automated messages are enabled.
-    welcome_message (str | None): The custom message sent to new buyers.
-    language (str | None): The preferred language code (e.g., 'en', 'it').
-
-Returns:
-    None
-"""
 async def save_user_session(
     user_id: str,
     thread_id: int | None = None,
@@ -29,6 +14,26 @@ async def save_user_session(
     welcome_message: str | None = None,
     language: str | None = None,
 ):
+    
+    """
+    Saves or updates a user session. Uses ON CONFLICT to update existing records.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+        thread_id (int | None): The Discord thread ID associated with the user.
+        uex_username (str | None): The UEX platform username.
+        bearer_token (str | None): API authentication bearer token.
+        secret_key (str | None): API authentication secret key.
+        enable (bool | None): Whether automated messages are enabled.
+        welcome_message (str | None): The custom message sent to new buyers.
+        language (str | None): The preferred language code (e.g., 'en', 'it').
+
+    Returns:
+        None
+    """
+    
+    
+    
     user_id = str(user_id)
 
     encrypted_bearer = encrypt(bearer_token) if bearer_token else None
@@ -74,20 +79,18 @@ async def save_user_session(
     logging.info(f"💾 Session saved for {user_id}")
 
 
-"""
-Retrieves the complete session data for a specific user.
-
-Args:
-    user_id (str): The unique Discord user ID.
-
-Returns:
-    dict | None: A dictionary containing all session fields, or None if not found.
-"""
 async def get_user_session(user_id: str) -> dict | None:
+   
     """
-    Retrieves the user's session as a dict.
-    Returns None if the user has no session.
+    Retrieves the complete session data for a specific user.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+
+    Returns:
+        dict | None: A dictionary containing all session fields, or None if not found.
     """
+    
     uid = str(user_id)
     async with db.pool.db_pool.acquire() as conn:
         row = await conn.fetchrow(
@@ -105,16 +108,18 @@ async def get_user_session(user_id: str) -> dict | None:
     return data
 
 
-"""
-Permanently deletes a user's session from the database.
-
-Args:
-    user_id (str): The unique Discord user ID to remove.
-
-Returns:
-    None
-"""
 async def remove_user_session(user_id: str):
+    
+    """
+    Permanently deletes a user's session from the database.
+
+    Args:
+        user_id (str): The unique Discord user ID to remove.
+
+    Returns:
+        None
+    """
+    
     user_id = str(user_id)
 
     async with db.pool.db_pool.acquire() as conn:
@@ -126,16 +131,19 @@ async def remove_user_session(user_id: str):
     logging.info(f"🗑️ Sessione rimossa per {user_id}")
 
 
-"""
-Retrieves only the Discord thread ID associated with a user.
-
-Args:
-    user_id (str): The unique Discord user ID.
-
-Returns:
-    int | None: The thread ID if it exists, otherwise None.
-"""
 async def get_user_thread_id(user_id: str) -> int | None:
+    
+    """
+    Retrieves only the Discord thread ID associated with a user.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+
+    Returns:
+        int | None: The thread ID if it exists, otherwise None.
+    """
+    
+    
     user_id = str(user_id)
 
     async with db.pool.db_pool.acquire() as conn:
@@ -147,16 +155,18 @@ async def get_user_thread_id(user_id: str) -> int | None:
     return row["thread_id"] if row and row["thread_id"] else None
 
 
-"""
-Retrieves the API credentials (bearer token and secret key) for a user.
-
-Args:
-    user_id (str): The unique Discord user ID.
-
-Returns:
-    tuple[str, str]: A tuple containing (bearer_token, secret_key). Returns empty strings if not found.
-"""
 async def get_user_keys(user_id: str) -> tuple[str, str]:
+    
+    """
+    Retrieves the API credentials (bearer token and secret key) for a user.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+
+    Returns:
+        tuple[str, str]: A tuple containing (bearer_token, secret_key). Returns empty strings if not found.
+    """
+    
     user_id = str(user_id)
 
     async with db.pool.db_pool.acquire() as conn:
@@ -178,16 +188,19 @@ async def get_user_keys(user_id: str) -> tuple[str, str]:
     return token, secret
 
 
-"""
-Checks if the welcome message is enabled and retrieves its content.
-
-Args:
-    user_id (str): The unique Discord user ID.
-
-Returns:
-    tuple[bool, str | None]: A tuple containing (is_enabled, message_text).
-"""
 async def get_user_welcome_message(user_id: str) -> tuple[bool, str | None]:
+
+    """
+    Checks if the welcome message is enabled and retrieves its content.
+
+    Args:
+        user_id (str): The unique Discord user ID.
+
+    Returns:
+        tuple[bool, str | None]: A tuple containing (is_enabled, message_text).
+    """
+
+
     user_id = str(user_id)
 
     async with db.pool.db_pool.acquire() as conn:
@@ -206,16 +219,18 @@ async def get_user_welcome_message(user_id: str) -> tuple[bool, str | None]:
     return bool(row["enable"]), row["welcome_message"] or None
 
 
-"""
-Searches for a user session using their UEX platform username instead of Discord ID.
-
-Args:
-    uex_username (str): The UEX username to search for.
-
-Returns:
-    dict | None: The session data as a dictionary, or None if no match is found.
-"""
 async def find_session_by_username(uex_username: str) -> dict | None:
+    
+    """
+    Searches for a user session using their UEX platform username instead of Discord ID.
+
+    Args:
+        uex_username (str): The UEX username to search for.
+
+    Returns:
+        dict | None: The session data as a dictionary, or None if no match is found.
+    """
+    
     async with db.pool.db_pool.acquire() as conn:
         row = await conn.fetchrow(
             """
@@ -235,16 +250,18 @@ async def find_session_by_username(uex_username: str) -> dict | None:
     return data
 
 
-"""
-Gets the preferred language for a user.
-
-Args:
-    user_id (str/int): The unique Discord user ID.
-
-Returns:
-    str | None: The language code (e.g., 'it') or None if an error occurs or user is not found.
-"""
 async def get_user_language(user_id):
+    
+    """
+    Gets the preferred language for a user.
+
+    Args:
+        user_id (str/int): The unique Discord user ID.
+
+    Returns:
+        str | None: The language code (e.g., 'it') or None if an error occurs or user is not found.
+    """
+        
     try:
         async with db.pool.db_pool.acquire() as conn:
             row = await conn.fetchrow(
@@ -257,17 +274,18 @@ async def get_user_language(user_id):
         return None
 
 
-"""
-Determines the user's language based on existing session data or Discord locale.
-Automatically saves the detected language if no session exists.
-
-Args:
-    interaction (discord.Interaction): The Discord interaction object.
-
-Returns:
-    str: The resolved language code.
-"""
 async def resolve_and_store_language(interaction: discord.Interaction) -> str:
+    
+    """
+    Determines the user's language based on existing session data or Discord locale.
+    Automatically saves the detected language if no session exists.
+
+    Args:
+        interaction (discord.Interaction): The Discord interaction object.
+
+    Returns:
+        str: The resolved language code.
+    """
     
     user_id = interaction.user.id
     
@@ -287,25 +305,18 @@ async def resolve_and_store_language(interaction: discord.Interaction) -> str:
     return lang
 
 
-"""
-Removes all sessions associated with a specific Discord thread ID.
-
-Args:
-    thread_id (int): The Discord thread ID.
-
-Returns:
-    int: The number of sessions successfully removed.
-"""
 async def remove_sessions_by_thread(thread_id: int) -> int:
+
     """
-    Removes all sessions associated with a thread.
+    Removes all sessions associated with a specific Discord thread ID.
 
     Args:
-    thread_id (int): Discord thread ID.
+        thread_id (int): The Discord thread ID.
 
     Returns:
-    int: Number of sessions removed.
+        int: The number of sessions successfully removed.
     """
+
     removed_count = 0
     try:
         async with db.pool.db_pool.acquire() as conn:

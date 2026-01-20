@@ -6,23 +6,26 @@ from db.sessions import *
 from db.negotiations import *
 from discord_bot.bot import bot
 from services.notifications import *
-import discord_bot.events as devents
+import discord_bot.events as events
 from utils.text_cleaner import clean_text
 from services.uex_api import send_uex_message
+from webserver.session_http import get_http_session
 
 
-"""
-Processes unified incoming webhooks for various event types (negotiations, replies, completions).
-
-Args:
-    request (aiohttp.web.Request): The incoming HTTP request object containing the JSON payload.
-    event_type (str): The type of event triggered (e.g., 'negotiation_started', 'user_reply').
-    user_id (str): The unique identifier of the user associated with the webhook.
-
-Returns:
-    dict: A dictionary containing the 'status' (HTTP code) and a 'text' message describing the outcome.
-"""
 async def handle_webhook_unificato(request, event_type: str, user_id: str):
+
+    """
+    Processes unified incoming webhooks for various event types (negotiations, replies, completions).
+
+    Args:
+        request (aiohttp.web.Request): The incoming HTTP request object containing the JSON payload.
+        event_type (str): The type of event triggered (e.g., 'negotiation_started', 'user_reply').
+        user_id (str): The unique identifier of the user associated with the webhook.
+
+    Returns:
+        dict: A dictionary containing the 'status' (HTTP code) and a 'text' message describing the outcome.
+    """
+
     try:
         body = await request.text()
         data = json.loads(body) if body else {}
@@ -30,6 +33,8 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
         lang = await get_user_language(user_id)
         
         if event_type == "negotiation_started":
+            
+            logging.debug(f"Processing 'negotiation_started' for user_id={user_id} with data: {data}")
             
             seller = data.get("listing_owner_username")
             buyer = data.get("client_username")
@@ -47,11 +52,15 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
                 logging.warning(f"⚠️ No thread found for User: {seller}")
                 return {"status": 404, "text": "User_thread_id not found"}
             
+            logging.debug(f"Retrieved thread_id={thread_id} for user_id={user_id}")
+            
 # ------- Retrieve Thread Seller -------
             thread = bot.get_channel( thread_id )
             if not thread:
                 logging.warning(f"⚠️ No thread found for Seller: {seller}")
                 return {"status": 404, "text": "thread not found"}
+            
+            logging.debug(f"Retrieved thread channel for sellerthread_id={thread_id}")
             
 # ------- Notification to Seller of a New Deal -------
             embed = discord.Embed(
@@ -68,14 +77,23 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
             embed.set_footer(text=t(lang, "embed.footer"))
             await thread.send(embed=embed)
             
+            logging.debug(f"Notification sent to thread_id={thread_id} for new negotiation started.")
+            
 
-            enabled, message = await get_user_welcome_message(user_id)            
+            enabled, message = await get_user_welcome_message(user_id)
+            
+            logging.debug(f"Welcome message status: {enabled}, message: {message}")
+                 
             if enabled and message:
+                
+                logging.debug(f"Preparing to send welcome message to user_id={user_id}")
                 
                 bearer, key = await get_user_keys(user_id)
                 
+                logging.debug(f"Retrieved API keys for user_id={user_id}")
+                
                 ok, error = await send_uex_message(
-                        session=devents.aiohttp_session,
+                        session= get_http_session(),
                         bearer_token=bearer,
                         secret_key=key,
                         notif_hash=hash,
@@ -84,6 +102,7 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
                             
                 if ok:
                     
+                    
                     embed=discord.Embed(
                             title=t(lang, "embed.welcome.title"),
                             description=message,
@@ -91,6 +110,8 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
                         )
                     embed.set_footer(text=t(lang, "embed.footer"))
                     await thread.send(embed=embed)            
+                    
+                    logging.debug(f"Welcome message sent successfully for user_id={user_id}")
                 
                 else:
                     logging.warning(f"⚠️ error sending welcome message for user_id={user_id}: {error}")

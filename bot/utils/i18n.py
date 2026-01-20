@@ -24,8 +24,6 @@ class I18n:
         self.load_locales()
 
 
-
-    
     def load_locales(self):
         
         """
@@ -43,10 +41,6 @@ class I18n:
             lang = file.stem
             with open(file, encoding="utf-8") as f:
                 self.translations[lang] = json.load(f)
-
-
-
-
 
     
     def t(self, lang: str, key: str, **kwargs) -> str:
@@ -69,7 +63,6 @@ class I18n:
         return text.format(**kwargs)
 
 translator = I18n(default_lang="en")
-
 
 
 def t(lang: str, key: str, **kwargs):

@@ -5,7 +5,22 @@ import db.banned as ban
 from discord import app_commands
 from logger import logging
 
+
+
 def has_uex_manager_role():
+    
+    """ A decorator check that restricts command execution to users with the "UEX Manager" role.
+
+    This function verifies the user's roles and, if the required role is not found, 
+    resolves the user's language to send a localized ephemeral error message.
+
+    Args:
+        interaction (discord.Interaction): The interaction object representing the command invocation.
+
+    Returns:
+        bool: True if the user has the "UEX Manager" role, False otherwise (triggering an ephemeral response).
+    """
+    
     async def predicate(interaction: discord.Interaction) -> bool:
         # Verifica se l'utente ha il ruolo con quel nome esatto
         lang = await sessions.resolve_and_store_language(interaction)
@@ -23,12 +38,22 @@ def has_uex_manager_role():
     return app_commands.check(predicate)
 
 
-
 async def assign_uex_user_role(interaction: discord.Interaction) -> bool:
+    
+    """ Assigns the "UEX user" role to a member if they are not banned and do not have administrative roles.
+
+    This function checks if the user is a manager or banned before attempting to assign the role. 
+    If the role is missing from the server, it logs an error but continues execution. 
+    It is typically used to initialize user permissions during their first interaction.
+
+    Args:
+        interaction (discord.Interaction): The interaction object containing the guild and user context.
+
+    Returns:
+        bool: True if the role was assigned, already present, or if the user is a manager; 
+            False if the user is banned and cannot receive the role.
     """
-    Returns False ONLY if user is banned.
-    Otherwise assigns role if missing and returns True.
-    """
+    
     guild = interaction.guild
     member = interaction.user
 
@@ -57,8 +82,20 @@ async def assign_uex_user_role(interaction: discord.Interaction) -> bool:
     return True
 
 
-
 async def is_user_banned(interaction: discord.Interaction) -> bool:
+    
+    """ Checks if a user is currently banned from using the bot's services.
+
+    This function queries the ban system for the user's status. If a ban is active, 
+    it resolves the user's language and sends a localized ephemeral message 
+    detailing the access denial and the specific reason for the ban.
+
+    Args:
+        interaction (discord.Interaction): The interaction object representing the command invocation.
+
+    Returns:
+        bool: True if the user is banned (and an error message was sent), False otherwise.
+    """
     
     member = interaction.user
     

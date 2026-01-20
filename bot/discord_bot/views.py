@@ -1,19 +1,118 @@
 import discord
 import aiohttp
 import logging
-from discord import ui
+import dateparser
 from utils.i18n import t
 from config import TUNNEL_URL
-from utils.status import check_user_security
 import db.sessions as sessions
+from discord import ui
+from datetime import datetime, timezone
+from utils.status import check_user_security
 from services.uex_api import fetch_and_store_uex_username
-from utils.roles_management import assign_uex_user_role
-from utils.status import build_status_embed
+from db.maintenance import set_maintenance
+from utils.status import update_status_message
+
+
+
+
 
 
 class StatusView(ui.View):
     def __init__(self):
         super().__init__(timeout=None)
+
+        
+class MaintenanceModal(ui.Modal):
+    def __init__(self, lang: str, bot_instance):
+        super().__init__(title=t(lang, "modal_maintenance_title"))
+        self.lang = lang
+        self.bot = bot_instance
+        
+        
+        self.message_input = ui.TextInput(
+            label=t(lang, "modal_maintenance_message_label"),
+            placeholder=t(lang, "modal_maintenance_message_placeholder"),
+            style=discord.TextStyle.long,
+            required=True,
+        )
+
+        self.start_input = ui.TextInput(
+            label=t(lang, "modal_maintenance_start_label"),
+            placeholder=t(lang, "modal_maintenance_start_placeholder"),
+            default=t(lang, "modal_maintenance.now_keyword"),
+            required=True,
+        )
+
+        self.end_input = ui.TextInput(
+            label=t(lang, "modal_maintenance_end_label"),
+            placeholder=t(lang, "modal_maintenance_end_placeholder"),
+            required=True,
+        )
+        
+        self.add_item(self.message_input)
+        self.add_item(self.start_input)
+        self.add_item(self.end_input)
+        
+        
+    async def on_submit(self, interaction: discord.Interaction):
+        
+        now = datetime.now(timezone.utc)
+        end_dt = dateparser.parse(self.end_input.value, settings={'RELATIVE_BASE': now, 'PREFER_DATES_FROM': 'future'})
+        
+        ## Controllare questo codice se da errore
+        
+        start_dt = None
+        
+        if self.start_input.value.lower() == t(self.lang, "modal_maintenance.now_keyword").lower():
+            start_dt = now
+        else:
+            start_dt = dateparser.parse(self.start_input.value, settings={'RELATIVE_BASE': now, 'PREFER_DATES_FROM': 'future'})
+        
+        
+        if not start_dt or not end_dt:
+            await interaction.response.send_message(
+                t(self.lang, "modal_maintenance_invalid_date"),
+                ephemeral=True
+            )
+            return
+        
+        try:
+            
+            await set_maintenance(
+                status="scheduled",
+                message=self.message_input.value,
+                start=start_dt.astimezone(timezone.utc),    
+                end=end_dt.astimezone(timezone.utc)
+            )
+            
+            await update_status_message(bot=self.bot)
+            
+            await interaction.response.send_message(
+                t(
+                    lang=self.lang,
+                    key="set_maintenance",
+                    start=start_dt.strftime("%Y-%m-%d %H:%M UTC"),
+                    end=end_dt.strftime("%Y-%m-%d %H:%M UTC"),
+                    message=self.message_input.value
+                ),
+                ephemeral=True
+            )
+            
+            logging.info(
+                         t(lang=self.lang,
+                           key="maintenance_set_by",
+                           name=interaction.user.name,
+                           start_dt=start_dt,
+                           end_dt=end_dt
+                           )
+            )
+
+        except Exception as e:
+            logging.exception(f"❌ Error setting maintenance by admin {interaction.user.name}: {e}")
+            await interaction.response.send_message(
+                t(self.lang, "error_set_maintenance", e=e),
+                ephemeral=True
+            )
 
 
 class DataModal(ui.Modal):
@@ -93,7 +192,6 @@ class DataModal(ui.Modal):
             )
 
 
-# --- View guide with button in the center of the arrows ---
 class SetupTutorialView(ui.View):
     
     def __init__(self, lang: str, user_id: str, username: str):
@@ -187,7 +285,6 @@ class SetupTutorialView(ui.View):
         self.current_page += 1
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
-
 
 
 class OpenThreadButton(ui.View):

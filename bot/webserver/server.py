@@ -46,8 +46,6 @@ async def handle_webhook(request):
         return web.Response(status=500, text=f"Error: {e}")
 
 
-
-
 async def handle_health(request):
     
     """
@@ -58,8 +56,6 @@ async def handle_health(request):
     """
     
     return web.Response(status=200, text=f"online")
-
-
 
 
 async def start_aiohttp_server():

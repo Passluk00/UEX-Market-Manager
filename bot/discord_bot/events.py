@@ -79,27 +79,24 @@ async def on_ready():
 
 
 
-"""
-Processes incoming messages to handle credential registration and notification replies.
-
-The logic is split into two main flows:
-1. **Credential Registration**: If a user sends a message containing 'bearer:', 'secret:', and 'username:', 
-   the bot uses regex to extract and save these UEX API keys to the database.
-2. **Notification Replies**: If a user replies to a bot-sent notification embed, the bot extracts 
-   the negotiation hash from the embed and forwards the user's message to the UEX API.
-
-Args:
-    message (discord.Message): The message object sent by a user.
-
-Returns:
-    None
-"""
-
-# TODO modificare questa parte di codice rimuovere inserimento keys 
-
 
 @bot.event
 async def on_message(message: discord.Message):
+
+
+    """
+    Processes incoming messages to handle notification replies.
+
+    If a user replies to a bot-sent notification embed, the bot extracts 
+    the negotiation hash from the embed and forwards the user's message to the UEX API.
+
+    Args:
+        message (discord.Message): The message object sent by a user.
+
+    Returns:
+        None
+    """
+
     if message.author.bot or not isinstance(message.channel, discord.Thread):
         return
 
@@ -169,25 +166,22 @@ async def on_message(message: discord.Message):
     await bot.process_commands(message)
 
 
-
-"""
-Cleans up the database when a Discord thread is deleted.
-
-Automatically removes all user sessions associated with the deleted thread ID 
-to ensure data consistency and prevent orphaned sessions.
-
-Args:
-    thread (discord.Thread): The thread object that was deleted.
-
-Returns:
-    None
-"""
 @bot.event
 async def on_thread_delete(thread: discord.Thread):
+
     """
-    When a thread is deleted, it deletes all associated sessions
-    in the DB for users connected to that thread.
+    Cleans up the database when a Discord thread is deleted.
+
+    Automatically removes all user sessions associated with the deleted thread ID 
+    to ensure data consistency and prevent orphaned sessions.
+
+    Args:
+        thread (discord.Thread): The thread object that was deleted.
+
+    Returns:
+        None
     """
+
     try:
         removed_count = await db_session.remove_sessions_by_thread(thread.id)
 
@@ -204,26 +198,23 @@ async def on_thread_delete(thread: discord.Thread):
         logging.exception(t(SYSTEM_LANGUAGE, "thread.delete_error", thread_id=thread.id, error=e))
 
 
-
-"""
-Removes a specific user's session when they leave a Discord thread.
-
-Ensures that if a user manually leaves or is removed from a negotiation thread, 
-their session data is cleared from the database.
-
-Args:
-    thread (discord.Thread): The thread the member left.
-    member (discord.Member): The member who left the thread.
-
-Returns:
-    None
-"""
 @bot.event
 async def on_thread_member_remove(thread: discord.Thread, member: discord.Member):
+    
     """
-    When a user leaves a thread, their session is removed from the database
-    if it was associated with that thread.
+    Removes a specific user's session when they leave a Discord thread.
+
+    Ensures that if a user manually leaves or is removed from a negotiation thread, 
+    their session data is cleared from the database.
+
+    Args:
+        thread (discord.Thread): The thread the member left.
+        member (discord.Member): The member who left the thread.
+
+    Returns:
+        None
     """
+    
     try:
         removed = await db_session.remove_user_session(str(member.id))
 
