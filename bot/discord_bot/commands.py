@@ -371,20 +371,30 @@ async def broadcast(interaction: discord.Interaction, message: str):
         users = await conn.fetch("SELECT DISTINCT user_id FROM sessions")
 
     logging.debug(f"📢 Broadcasting message to {len(users)} users")
+    
+    embed = discord.Embed(
+        title=t(lang, "broadcast_embed_title"), 
+        description=message,
+        color=discord.Color.blurple(),
+        timestamp=discord.utils.utcnow()
+    )
+
+    embed.set_footer(
+        text=t(lang, "broadcast_embed_footer")
+    )
 
     for row in users:
         user = await bot.fetch_user(int(row["user_id"]))
         try:
             logging.debug(f"📩 Sending broadcast to user {user.id}")
-            await user.send(
-                t(lang=lang, key="broadcast_message", message=message)
-            )
+            await user.send(embed=embed)
             sent += 1
         except discord.Forbidden:
             logging.warning(f"❌ DM closed for user {user.id}")
         except discord.HTTPException as e:
             logging.error(f"❌ Errore HTTP DM {user.id}: {e}")
 
+    
 
     await interaction.response.send_message(
         t(lang, "broadcast_sent_to", sent=sent),

@@ -195,6 +195,12 @@ async def check_user_security(interaction: discord.Interaction) -> bool:
         logging.debug(f"Admin bypass: {member.name}")
         return True
 
+    lang = await sessions.resolve_and_store_language(interaction)
+    if not lang:
+        lang = "en"
+        logging.debug(f"Language not set for {member.name}, defaulting to English.")
+
+
     if not await check_maintenance(interaction, lang):
         return False
 
