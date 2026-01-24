@@ -1,21 +1,23 @@
 import docker
 import time
 import requests
-import os
-
-# ================= CONFIG =================
-
-BOT_CONTAINER_NAME = "python"  
-CHECK_INTERVAL = 15  # SECONDS
-
-WEBHOOK_URL = os.getenv("WEBHOOK_MONITORING_URL")
-
-DOCKER_SOCKET = "unix:///var/run/docker.sock"
+import logging
+from config import *
 
 # ================= UTIL =================
 
-def log(msg):
-    print(msg, flush=True)
+
+def set_maintenance(minute_delay):
+    
+    try:
+        
+        
+        
+        
+        
+    except Exception as e:
+        logging.error(f"errore: {e}")
+
 
 def send_webhook(message, color=15158332):
     payload = {
@@ -30,9 +32,9 @@ def send_webhook(message, color=15158332):
 
     try:
         r = requests.post(WEBHOOK_URL, json=payload, timeout=10)
-        log(f"[WEBHOOK] {r.status_code} → {message}")
+        logging.info(f"[WEBHOOK] {r.status_code} → {message}")
     except Exception as e:
-        log(f"[WEBHOOK ERROR] {e}")
+        logging.error(f"[WEBHOOK ERROR] {e}")
 
 # ================= CORE =================
 
@@ -43,48 +45,48 @@ def connect_docker():
 
 def restart_container(client):
     try:
-        container = client.containers.get(BOT_CONTAINER_NAME)
+        container = client.containers.get(CONTAINER_NAME)
         container.start()
-        log(f"🔄 Container {BOT_CONTAINER_NAME} Restarted")
+        logging.info(f"🔄 Container {CONTAINER_NAME} Restarted")
 
         send_webhook(
-            f"🔄 Container `{BOT_CONTAINER_NAME}` automatically RESTARTED",
+            f"🔄 Container `{CONTAINER_NAME}` automatically RESTARTED",
             color=3066993  # green
         )
     except Exception as e:
-        log(f"❌ Container restart error: {e}")
+        logging.error(f"❌ Container restart error: {e}")
         send_webhook(
-            f"❌ ERROR restarting `{BOT_CONTAINER_NAME}`\n```{e}```",
+            f"❌ ERROR restarting `{CONTAINER_NAME}`\n```{e}```",
             color=15158332
         )
 
 def watchdog_loop():
-    log("🐶 Watchdog started")
+    logging.info("🐶 Watchdog started")
 
     while True:
         try:
             client = connect_docker()
-            log("✅ Connected to Docker Engine")
+            logging.info("✅ Connected to Docker Engine")
 
             while True:
                 try:
-                    container = client.containers.get(BOT_CONTAINER_NAME)
+                    container = client.containers.get(CONTAINER_NAME)
                     status = container.status
 
-                    log(f"🔍 State {BOT_CONTAINER_NAME}: {status}")
+                    logging.debug(f"🔍 State {CONTAINER_NAME}: {status}")
 
                     if status != "running":
-                        log("⚠️ Bot NON running → Restarting")
+                        logging.error("⚠️ Bot NON running → Restarting")
                         send_webhook(
-                            f"⚠️ Container `{BOT_CONTAINER_NAME}` status `{status}` → RESTART",
+                            f"⚠️ Container `{CONTAINER_NAME}` status `{status}` → RESTART",
                             color=15105570  # orange
                         )
                         restart_container(client)
 
                 except docker.errors.NotFound:
-                    log("❌ Container NOT found → attempt to start")
+                    logging.error("❌ Container NOT found → attempt to start")
                     send_webhook(
-                        f"❌ Container `{BOT_CONTAINER_NAME}` NOT found → forced start",
+                        f"❌ Container `{CONTAINER_NAME}` NOT found → forced start",
                         color=15158332
                     )
                     restart_container(client)
@@ -92,7 +94,7 @@ def watchdog_loop():
                 time.sleep(CHECK_INTERVAL)
 
         except Exception as e:
-            log(f"❌ Docker not available: {e}")
+            logging.error(f"❌ Docker not available: {e}")
             send_webhook(
                 f"❌ Docker Engine NOT available\n```{e}```",
                 color=15158332
