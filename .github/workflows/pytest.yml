@@ -1,0 +1,55 @@
+name: Pytest CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-tools
+        if [ -f bot/requirements.txt ]; then pip install -r bot/requirements.txt; fi
+        if [ -f watchdog/requirements.txt ]; then pip install -r watchdog/requirements.txt; fi
+        pip install pytest pytest-asyncio pytest-cov aioresponses  # Ensure testing tools are installed
+
+    - name: Run bot tests
+      working-directory: ./bot
+      env:
+        SERVER_HOST: 0.0.0.0
+        PORT: 8080
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: test_user
+        DB_PASSWORD: test_password
+        DB_NAME: test_db
+        DISCORD_TOKEN: dummy_token
+        TUNNEL_URL: https://dummy.tunnel.url
+        ENCRYPTION_KEY: dummy_key_for_testing_only=
+      run: |
+        pytest tests/ -v --cov=./ --cov-report=xml
+
+    - name: Run watchdog tests
+      working-directory: ./watchdog
+      env:
+        WEBHOOK_MONITORING_URL: https://dummy.webhook/
+        GITHUB_TOKEN: dummy_token
+        GITHUB_REPO: owner/repo
+        DISCORD_TOKEN: dummy_token
+        TUNNEL_URL: https://dummy.tunnel.url
+      run: |
+        pytest tests/ -v --cov=./ --cov-report=xml

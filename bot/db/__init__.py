@@ -32,7 +32,6 @@ __all__ = [
     "find_session_by_username",
     "delete_negotiation_link",
     "get_maintenance_status",
-    "get_maintenance_status",
     "save_negotiation_link",
     "get_negotiation_link",
     "remove_user_session",

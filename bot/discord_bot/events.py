@@ -9,7 +9,7 @@ from discord_bot.bot import bot
 from utils.logo import show_logo
 import db.sessions as db_session
 from utils.status import start_status_task
-from webserver.session_http import init_http
+from webserver.session_http import init_http, get_http_session
 from services.uex_api import send_uex_message
 from webserver.server import start_aiohttp_server
 from services.notifications import send_startup_notification
@@ -126,11 +126,11 @@ async def on_message(message: discord.Message):
         try:
             
             ok, error = await send_uex_message(
-                        session=aiohttp_session,
+                        session=get_http_session(),
                         bearer_token=session['bearer_token'],
                         secret_key=session["secret_key"],
-                        notif_hash=hash,
-                        message=message
+                        notif_hash=notif_hash,
+                        message=content
                     )
             
             if ok:
@@ -146,8 +146,8 @@ async def on_message(message: discord.Message):
                 embed.add_field(
                     name=t(lang, "embed.reply_sent.negotiation"),
                     value=t(
-                        lang,
-                        "embed.reply_sent.link",
+                        lang=lang,
+                        key="embed.reply_sent.link",
                         hash=notif_hash
                     ),
                     inline=False
@@ -160,8 +160,8 @@ async def on_message(message: discord.Message):
                 
                 await message.channel.send(t(lang,"errors.uex_send_failed",error=error))
                 
-        except:
-            logging.info(t(lang,"errors.uex_send_failed",error=error))
+        except Exception as e:
+            logging.info(t(lang,"errors.uex_send_failed",error=e))
 
     await bot.process_commands(message)
 

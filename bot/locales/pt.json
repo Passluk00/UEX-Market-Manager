@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 Mensagem de boas-vindas enviada",
   "enabled": "ativado",
   "error_set_maintenance": "❌ Erro ao configurar o modo de manutenção. Erro:\n {e}",
-  "errors.uex_send_failed": "⚠️ Erro UEX ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ Erro UEX: {error}",
   "generic_error": "❌ Ocorreu um erro ao criar o tópico.",
   "generic_error_command_delete": "⚠️ Ocorreu um erro. Tente novamente mais tarde ou contacte um administrador.",
   "guide_button_insert": "Inserir dados",

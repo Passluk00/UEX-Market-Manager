@@ -6,3 +6,4 @@ discord.py
 cryptography
 python-dotenv
 dateparser
+alembic
