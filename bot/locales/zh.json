@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 欢迎消息已发送",
   "enabled": "已启用",
   "error_set_maintenance": "❌ 设置维护模式时出错。错误：\n {e}",
-  "errors.uex_send_failed": "⚠️ UEX 错误 ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ UEX 错误: {error}",
   "generic_error": "❌ 创建线程时发生错误。",
   "generic_error_command_delete": "⚠️ 发生错误。请稍后再试或联系管理员。",
   "guide_button_insert": "输入数据",

@@ -70,11 +70,23 @@ async def handle_webhook_unificato(request, event_type: str, user_id: str):
                     "embed.negotiation_started.description",
                     buyer=buyer,
                     title=data.get("listing_title", "—"),
-                    hash=hash
                 ),
                 color=discord.Color.green()
             )
-            embed.set_footer(text=t(lang, "embed.footer"))
+            
+            embed.add_field(
+                name= t(
+                    lang= lang, 
+                    key="embed.reply_sent.link",
+                    hash=hash
+                    ),
+                inline= False
+            )
+            
+            
+            ## TODO controllare questo punto
+            
+            embed.set_footer(text=t(lang, "add_footer"))
             await thread.send(embed=embed)
             
             logging.debug(f"Notification sent to thread_id={thread_id} for new negotiation started.")

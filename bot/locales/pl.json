@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 Wiadomość powitalna wysłana",
   "enabled": "włączone",
   "error_set_maintenance": "❌ Błąd podczas ustawiania trybu konserwacji. Błąd:\n {e}",
-  "errors.uex_send_failed": "⚠️ Błąd UEX ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ Błąd UEX: {error}",
   "generic_error": "❌ Wystąpił błąd podczas tworzenia wątku.",
   "generic_error_command_delete": "⚠️ Wystąpił błąd. Spróbuj ponownie później lub skontaktuj się z administratorem.",
   "guide_button_insert": "Wprowadź dane",

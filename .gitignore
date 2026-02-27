@@ -28,3 +28,11 @@ postgres-data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Tests (local only — not committed to git)
+tests/
+watchdog/tests/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml

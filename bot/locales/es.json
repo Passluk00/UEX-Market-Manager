@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 Mensaje de bienvenida enviado",
   "enabled": "habilitado",
   "error_set_maintenance": "❌ Error al configurar el modo de mantenimiento. Error:\n {e}",
-  "errors.uex_send_failed": "⚠️ Error de UEX ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ Error de UEX: {error}",
   "generic_error": "❌ Ocurrió un error al crear el hilo.",
   "generic_error_command_delete": "⚠️ Ocurrió un error. Por favor, inténtalo de nuevo más tarde o contacta con un administrador.",
   "guide_button_insert": "Insertar datos",

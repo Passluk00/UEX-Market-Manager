@@ -1,6 +1,6 @@
 services:
 
-# Python Bot
+  # Python Bot
   python:
     build: ./bot
     container_name: python
@@ -16,7 +16,7 @@ services:
     depends_on:
       - postgres
 
-# Nginx Web Server
+  # Nginx Web Server
   nginx:
     image: nginx:alpine
     container_name: nginx
@@ -35,7 +35,7 @@ services:
     networks:
       - backend
 
-# Certbot for SSL Certificates
+  # Certbot for SSL Certificates
   certbot:
     image: certbot/certbot
     container_name: certbot
@@ -45,8 +45,7 @@ services:
     # Command changed to not attempt infinite renewal if it fails
     command: certonly --webroot --webroot-path=/var/www/certbot --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN}
 
-
-# Watchdog Service
+  # Watchdog Service with Auto-Update
   watchdog:
     build: ./watchdog
     container_name: watchdog
@@ -54,11 +53,21 @@ services:
     networks:
       - backend
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only access to Docker socket
+      - ./watchdog:/app                                # Mount watchdog code
+      - watchdog_logs:/app/logs                        # Persistent logs
+      - ./:/repo                                       # Repo root for git pull/reset by the updater
+    env_file:
+      - .env
     depends_on:
       - python
+      - postgres
+    environment:
+      # Override specific settings if needed (optional)
+      - PYTHONUNBUFFERED=1  # Ensure logs are flushed immediately
+      - GIT_REPO_PATH=/repo # Path where repo root is mounted
 
-# PostgreSQL Database
+  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: postgres
@@ -76,6 +85,7 @@ services:
 
 volumes:
   postgres_data:
+  watchdog_logs:  # Persistent volume for watchdog logs
 
 networks:
   backend:

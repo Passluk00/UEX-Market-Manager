@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 Welcome message sent",
   "enabled": "enabled",
   "error_set_maintenance": "❌ Error setting maintenance mode. Error:\n {e}",
-  "errors.uex_send_failed": "⚠️ UEX Error ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ UEX Error: {error}",
   "generic_error": "❌ An error occurred while creating the thread.",
   "generic_error_command_delete": "⚠️ An error occurred. Please try again later or contact an administrator.",
   "guide_button_insert": "Insert data",

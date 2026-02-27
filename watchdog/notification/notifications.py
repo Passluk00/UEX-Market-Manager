@@ -1,6 +1,6 @@
 import logging
-import datetime
-from config import WEBHOOK_URL
+from datetime import datetime
+from config import WEBHOOK_MONITORING
 import aiohttp
 
 async def send_discord_webhook(webhook_url: str, embed: dict):
@@ -32,21 +32,25 @@ async def notify_update_success(old_sha: str, new_sha: str):
         ],
         "timestamp": datetime.utcnow().isoformat()
     }
-    await send_discord_webhook(WEBHOOK_URL, embed)
+    await send_discord_webhook(WEBHOOK_MONITORING, embed)
 
 async def notify_update_failure(error: str, old_sha: str):
     """Notifica fallimento aggiornamento con rollback"""
-    embed = {
-        "title": "❌ Update Failed - Rollback Executed",
-        "description": f"Update failed and system rolled back to previous version",
-        "color": 0xFF0000,
-        "fields": [
-            {"name": "Error", "value": f"```{error[:1000]}```", "inline": False},
-            {"name": "Rolled Back To", "value": f"`{old_sha[:8]}`", "inline": True}
-        ],
-        "timestamp": datetime.utcnow().isoformat()
-    }
-    await send_discord_webhook(WEBHOOK_URL, embed)
+    try:
+        embed = {
+            "title": "❌ Update Failed - Rollback Executed",
+            "description": f"Update failed and system rolled back to previous version",
+            "color": 0xFF0000,
+            "fields": [
+                {"name": "Error", "value": f"```{error[:1000]}```", "inline": False},
+                {"name": "Rolled Back To", "value": f"`{old_sha[:8]}`", "inline": True}
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await send_discord_webhook(WEBHOOK_MONITORING, embed)
+    except Exception as e:
+        logging.error(f"Failed to send update failure notification: {e}")
+
 
 async def notify_monitoring(message: str, level: str = "info"):
     """Notifica eventi generici al monitoring webhook"""
@@ -63,4 +67,47 @@ async def notify_monitoring(message: str, level: str = "info"):
         "color": colors.get(level, 0x0099FF),
         "timestamp": datetime.utcnow().isoformat()
     }
-    await send_discord_webhook(WEBHOOK_URL, embed)
+    await send_discord_webhook(WEBHOOK_MONITORING, embed)
+
+
+async def notify_update_started(current_sha: str, latest_sha: str, minutes: int):
+    """
+    Notifica inizio procedura di aggiornamento
+    
+    Args:
+        current_sha: SHA del commit corrente
+        latest_sha: SHA del commit target
+        minutes: Minuti di preavviso
+    """
+    embed = {
+        "title": "🔧 Maintenance Scheduled",
+        "description": f"System update will begin in {minutes} minutes",
+        "color": 0xFFAA00,
+        "fields": [
+            {"name": "Current Version", "value": f"`{current_sha[:8]}`", "inline": True},
+            {"name": "Target Version", "value": f"`{latest_sha[:8]}`", "inline": True},
+            {"name": "Downtime", "value": "~5-10 minutes", "inline": False}
+        ],
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    await send_discord_webhook(WEBHOOK_MONITORING, embed)
+
+async def notify_container_restart(container_name: str, reason: str = "unhealthy"):
+    """
+    Notifica restart del container
+    
+    Args:
+        container_name: Nome del container
+        reason: Motivo del restart
+    """
+    embed = {
+        "title": "🔄 Container Restarted",
+        "description": f"Container `{container_name}` has been restarted",
+        "color": 0xFFAA00,
+        "fields": [
+            {"name": "Reason", "value": reason, "inline": True},
+            {"name": "Status", "value": "Running", "inline": True}
+        ],
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    await send_discord_webhook(WEBHOOK_MONITORING, embed)

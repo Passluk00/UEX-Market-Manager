@@ -36,7 +36,7 @@
   "embed.welcome.title": "👋 Willkommensnachricht gesendet",
   "enabled": "aktiviert",
   "error_set_maintenance": "❌ Fehler beim Einstellen des Wartungsmodus. Fehler:\n {e}",
-  "errors.uex_send_failed": "⚠️ UEX-Fehler ({status}): {error}",
+  "errors.uex_send_failed": "⚠️ UEX-Fehler: {error}",
   "generic_error": "❌ Ein Fehler ist beim Erstellen des Threads aufgetreten.",
   "generic_error_command_delete": "⚠️ Ein Fehler ist aufgetreten.",
   "guide_button_insert": "Daten einfügen",
