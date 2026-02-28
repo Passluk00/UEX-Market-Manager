@@ -29,9 +29,9 @@ postgres-data/
 .DS_Store
 Thumbs.db
 
+.vscode/
+
 # Tests (local only — not committed to git)
-tests/
-watchdog/tests/
 .pytest_cache/
 htmlcov/
 .coverage
