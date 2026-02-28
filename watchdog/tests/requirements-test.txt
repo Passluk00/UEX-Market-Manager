@@ -1,0 +1,4 @@
+# Test dependencies for the watchdog
+pytest
+pytest-asyncio
+# All other deps already in watchdog/requirements.txt
