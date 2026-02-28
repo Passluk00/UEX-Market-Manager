@@ -112,28 +112,49 @@ While the original version focused on basic notification delivery, this **new it
     
     ```
     # --- DISCORD CONFIGURATION ---
-    DISCORD_TOKEN="Token"                       # Your Discord Bot Token from the Discord Developer Portal
-    WEBHOOK_MONITORING_URL="https://..."        # Discord Webhook URL for bot status and heartbeat monitoring
-    SYSTEM_LANGUAGE="en"                        # Default system language ( e.g., en, it, fr )
+    DISCORD_TOKEN="Token"                   # Your Discord Bot Token from the Discord Developer Portal
+    WEBHOOK_MONITORING_URL="https://..."    # Discord Webhook URL for bot status and heartbeat monitoring
+    SYSTEM_LANGUAGE="en"                    # Default system language ( e.g., en, it, fr )
 
     # --- NETWORK CONFIGURATION ---
-    TUNNEL_URL="https://your-domain.ddns.net"   # Your public DNS domain or IP (used for Webhook callbacks)
-    PORT=20187                                  # Internal port where the Python webserver will listen
+    TUNNEL_URL="https://test.ddns.net"      # Your public DNS domain or IP (used for Webhook callbacks)
+    PORT=20187                              # Internal port where the Python webserver will listen
 
     # --- DATABASE CONFIGURATION ---
-    DB_HOST="postgres"                          # Hostname of the database service (matches docker-compose service name)
-    DB_PORT=5432                                # Port for PostgreSQL (default is 5432)
-    DB_NAME="uexbot"                            # Name of the PostgreSQL database
-    DB_USER="uexuser"                           # Username for database authentication
-    DB_PASSWORD="superstrongpassword"           # Strong password for database authentication
-    ENCRYPTION_KEY = "KEY"                      # Strong ENCRYPTION KEY
+    DB_HOST="postgres"                      # Hostname of the database service (matches docker-compose service name)
+    DB_PORT=5432                            # Port for PostgreSQL (default is 5432)
+    DB_NAME="uexbot"                        # Name of the PostgreSQL database
+    DB_USER="uexuser"                       # Username for database authentication
+    DB_PASSWORD="superstrongpassword"       # Strong password for database authentication
+    ENCRYPTION_KEY="KEY"                    # Strong ENCRYPTION KEY
 
     # --- LOGGING ---
-    LOG_PATH="./bot.log"                        # Path where the bot will store its execution logs
+    LOG_PATH="./bot.log"                    # Path where the bot will store its execution logs
 
     # --- CERTBOT CONFIGURATION ---
     CERTBOT_EMAIL="test@gmail.com"          # Email for Let's Encrypt registration and recovery
     DOMAIN="yourdomain.com"                 # Your domain for SSL certificate generation
+
+    # ============================================================================
+    # --- WATCHDOG AUTO-UPDATE CONFIGURATION ---
+    # ============================================================================
+
+    # --- GITHUB REPOSITORY ---
+    GITHUB_REPO="Passluk00/UEX-Market-Manager"  # Your GitHub repository (format: username/repo-name)
+    GITHUB_BRANCH="main"                        # Branch to track for updates (usually 'main' or 'master')
+
+    # --- DOCKER CONTAINER ---
+    BOT_CONTAINER_NAME="python"                 # Name of the bot container to manage (must match service name in docker-compose)
+
+    # --- UPDATE TIMING ---
+    HEALTH_CHECK_INTERVAL="60"                  # Seconds between container health checks (default: 60)
+    UPDATE_CHECK_TIME="03:00"                   # Daily time to check for updates - 24h format HH:MM (default: 03:00 = 3:00 AM UTC)
+    MAINTENANCE_NOTICE_MINUTES="30"             # Minutes of advance notice before maintenance starts (default: 30)
+
+    # --- GITHUB AUTH (optional but recommended) ---
+    GITHUB_TOKEN="testVar"                             # GitHub Personal Access Token — avoids 60 req/hr anonymous API rate-limit
+    GIT_REPO_PATH="/repo"                       # Path where the repo root is mounted inside the watchdog container (see docker-compose.yml)
+
 
     ```
     ### ⚠️ Important
